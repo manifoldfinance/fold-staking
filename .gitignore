@@ -1,0 +1,11 @@
+.DS_Store
+/node_modules
+/typechain
+/cache
+/artifacts
+.env
+
+# solidity-coverage files
+/coverage
+/coverage.json
+package-lock.json
