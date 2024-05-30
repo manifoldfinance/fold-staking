@@ -8,7 +8,7 @@ Stakers into the `FOLDstaking.sol` contract are underwriting this risk (captive 
 
 Multiple deposits may be made of several V3 positions. The duration of each deposit as well as its share of the total liquidity deposited in the vault (for that pair) determines how much the reward will be (it's paid from the WETH balance of the contract).
 
-There is no necessity for a Keeper to continuously compound rewards; however, withdrawals, after initiation, are pro-rated over 14 days if they are above a certain % of the total liquidity in the pool.
+There is no necessity for a Keeper to continuously compound rewards; however, withdrawals, after initiation, are pro-rated over 14 days if they are above a certain % of the total liquidity in the pool (borrowing from the queue design of mevETH with some small adjustment to fit).
 
 ## Materials and methods
 
@@ -21,7 +21,7 @@ The formula there-in for calculating rewards has a useful property:
 
 The useful property is in the second half of the expression. Division prevents an overflow from occuring (in the worst-case scenario) because, otherwise, duration would keep increasing (potentially indefinitely), and eventually cause an overflow in the result of the expression. 
 
-When it comes to calculating rewards, specifically, we don't take into account the stake's entire duration, looping through each week on a need-to-count basis (we divide and conquer the problem of aggregating rewards).
+When it comes to calculating rewards, specifically, we don't take into account the stake's entire duration, looping through each week on a need-to-count basis (we divide and conquer the problem of aggregating rewards). Claiming rewards or removing liquidity resets the deposit's timestamp to the current week (reducing its total rewards).
 
 For a separate matter, we do factor in the average stake duration. The following property is inherited from the so-called "sunshine & rainbow" design doc: "you can only have 1 position per wallet; you can always add on top of your current position, but you can’t split your position into multiple pieces."
 
@@ -34,6 +34,13 @@ On an individual basis, depositors to may wish to decide the price range (ticks)
 Choosing price ranges for the individual deposit automatically applies a vote is used to affect the deposits of stakers who show no personal preference for their own NFT. This is because *we don't force* (though we do *encourage*) our depositors to accept the responsibility of this choice.
 
 Instead, by calling our third `deposit` function (with the least number of parameters) they may accept the time-weighted median for the price range (which factors in the individual decisions of depositors for each pool, respectively).
+
+It is not necessary for LPs to manually claim fees collected by a V3 pool and redeposit them to
+increase the liquidity of a deposit. Uniswap is designed to handle this automatically, ensuring that fees are continuously working to enhance the earning potential of LPs. 
+
+Bunni has a `compound` function to increase the value of share tokens (ERC20 balances that each correspond to a key, which is a pool and a price range to go with it). `FOLDstaking.sol` approaches rewards differently so there is no requirement for this.
+
+The difference also relates to how Bunni pays rewards pro rata to depositors' contribution per price range (relative to the total liquidity for that price range). `FOLDstaking.sol` pays rewards solely based on the duration of the deposit...and the total size of the deposit (across all price ranges) relative to the total liquidity in the pool (again, across all prices). 
 
 ## Observations and results
 

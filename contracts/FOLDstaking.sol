@@ -15,7 +15,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
 import "./Dependencies/SafeTransferLib.sol";
 import {IUniswapV3Pool} from "./Dependencies/IUniswapV3Pool.sol";
-import {TickMath, LiquidityAmounts} from "./Dependencies/LiquidityAmounts.sol";
+import {TickMath, FullMath, LiquidityAmounts} from "./Dependencies/LiquidityAmounts.sol";
 
 interface IWETH is IERC20 {
     function deposit() external payable;
@@ -50,33 +50,10 @@ interface IUniswapV3MintCallback {
 }
 
 // ERC20 represents the shareToken  
-contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
+contract FOLDstaking is IUniswapV3MintCallback, IERC721Receiver {
     
     using SafeTransferLib for IERC20;
     using SafeTransferLib for IWETH;
-
-    // If you withdraw we clawback a percentage 
-
-    // Initiate Withdraw (getting out your payout)
-    // …period of wait…
-    // exit (remove fold)
-
-    // Fold tokens being staked into contract
-    // Value of fold in the vault 
-    // is being used as a backstop for liabili
-
-    // Do a claim against vault
-    // Payout to the vault 
-    // A way to limit the amount of deposits
-    // Emergency shutdown
-
-    // Query the apr paid…
-    // How much vault provides
-    // based on price of fold
-
-    //  function harvest(uint256 pid, address to) external;
-    // function withdrawAndHarvest(uint256 pid, uint256 amount, address to) external;
-
 
     /// @notice Inidicates if staking is paused.
     bool public stakingPaused;
@@ -91,20 +68,20 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
     address[] public owners;
     mapping(address => bool) public isOwner;
     mapping(uint => uint) public totalsUSDC; // week # -> liquidity
-    uint public totalLiquidityUSDC; // in UniV3 liquidity units
+    uint public liquidityUSDC; // in UniV3 liquidity units
     uint public maxTotalUSDC; // in the same units
 
-    mapping(uint => uint) public totalsWETH; // week # -> liquidity
-    uint public totalLiquidityWETH; // for the WETH<>FOLD pool
+    mapping(uint => uint) public totalsETH; // week # -> liquidity
+    uint public liquidityETH; // for the WETH<>FOLD pool
     uint public maxTotalWETH;
 
     INonfungiblePositionManager public immutable nonfungiblePositionManager;
 
-    /// @param pool The Uniswap V3 pool
+    /// @param pool either FOLD_USDC or FOLD_WETH
     /// @param tickLower The lower tick of the UniV3 LP position
     /// @param tickUpper The upper tick of the UniV3 LP position
     struct Key { // 
-        IUniswapV3Pool pool; // the WETH pool or the USDC pool 
+        address pool; // the FOLD_WETH pool or the FOLD_USDC pool 
         int24 tickLower;
         int24 tickUpper;
     }
@@ -119,17 +96,15 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
         uint24 fee;
         address payer;
     }
-    /// @param pool either FOLD_USDC or FOLD_WETH
+    
+    /// @param key The pool and price range of the liquidity position
     /// @param recipient The recipient of the liquidity position
-    /// @param payer The address that will pay the tokens
     /// @param amount0Desired The token0 amount to use
     /// @param amount1Desired The token1 amount to use
     /// @param amount0Min The minimum token0 amount to use
     /// @param amount1Min The minimum token1 amount to use
     struct AddLiquidityParams {
-        address pool;
-        address recipient;
-        address payer;
+        Key key;
         uint256 amount0Desired;
         uint256 amount1Desired;
         uint256 amount0Min;
@@ -141,14 +116,12 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
     /// @param shares The amount of ERC20 tokens (this) to burn,
     /// @param amount0Min The minimum amount of token0 that should be accounted for the burned liquidity,
     /// @param amount1Min The minimum amount of token1 that should be accounted for the burned liquidity,
-    /// @param deadline The time by which the transaction must be included to effect the change
     struct WithdrawParams {
-        BunniKey key;
+        Key key;
         address recipient;
         uint256 shares;
         uint256 amount0Min;
         uint256 amount1Min;
-        uint256 deadline;
     }
 
     struct Transaction {
@@ -161,14 +134,16 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
     mapping(uint => mapping(address => bool)) public confirmed;
 
     // You can have multiple positions per address (representing different ranges).
-
     
-    mapping(address => mapping(address => uint)) totals; // depositor => token => balance
-    mapping(address => Deposit) deposits;
+    mapping(address => LP) totals;
     mapping(address => Key[]) keys;
-    mapping(address => Deposit) totals;
 
-    mapping(address => mapping(uint => uint)) public depositTimestamps; // for liquidity providers
+    struct LP { // total LP deposit, including both NFT deposits, and the other kind
+        uint fold;
+        uint usdc;
+        uint weth;
+    }
+    mapping(address => mapping(uint => uint)) public depositTimestamps; // owner => NFTid => amount
 
     // ERC20 addresses (mainnet) of tokens
     address constant FOLD = 0xd084944d3c05CD115C09d072B9F44bA3E0E45921;
@@ -198,21 +173,6 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
 
     event DepositNFT(uint tokenId, address owner);
     event Withdrawal(uint tokenId, address owner, uint rewardPaid);
-
-    
-    /// @notice Emitted when fees are compounded back into liquidity
-    /// @param sender The msg.sender address
-    /// @param bunniKeyHash The hash of the Bunni position's key
-    /// @param liquidity The amount by which liquidity was increased
-    /// @param amount0 The amount of token0 added to the liquidity position
-    /// @param amount1 The amount of token1 added to the liquidity position
-    event Compound(
-        address indexed sender,
-        bytes32 indexed bunniKeyHash,
-        uint128 liquidity,
-        uint256 amount0,
-        uint256 amount1
-    );
     
     event ConfirmTransfer(address indexed owner, uint indexed index);
     event RevokeTransfer(address indexed owner, uint indexed index);
@@ -222,6 +182,20 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
         uint indexed index,
         address indexed to,
         uint value
+    );
+
+    /// @notice Emitted when liquidity is increased via deposit
+    /// @param keyHash The hash of the position's key
+    /// @param liquidity The amount by which liquidity was increased
+    /// @param amount0 The amount of token0 that was paid for the increase in liquidity
+    /// @param amount1 The amount of token1 that was paid for the increase in liquidity
+    /// @param shares The amount of share tokens minted to the recipient
+    event Deposit(
+        bytes32 indexed keyHash,
+        uint128 liquidity,
+        uint256 amount0,
+        uint256 amount1,
+        uint256 shares
     );
 
     modifier onlyOwner() {
@@ -248,7 +222,7 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
         stakingPaused = !stakingPaused;
     }
 
-    function _valid_token(address token, uint amount) internal returns (uint fold, usdc) {
+    function _valid_token(address token, uint amount) internal returns (uint fold, uint usdc) {
         fold = token == FOLD ? amount : 0;
         usdc = token == USDC ? amount : 0;
         require(fold > 0 || usdc > 0 || token == WETH, "token type");
@@ -259,8 +233,7 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
         uint256 amount1Owed,
         bytes calldata data
     ) external override {
-        require(msg.sender == FOLD_WETH || msg.sender == FOLD_USDC, "");
-
+        require(msg.sender == FOLD_WETH || msg.sender == FOLD_USDC, "callback");
         MintCallbackData memory decodedData = abi.decode(
             data, (MintCallbackData)
         );
@@ -344,7 +317,7 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
     
     function submitTransfer(address _to, uint _value, 
         address _token) public onlyOwner {
-        _valid_token(token);
+        _valid_token(_token, _value);
         uint index = transactions.length;
         transactions.push(
             Transaction({to: _to,
@@ -377,7 +350,7 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
     }
     
 
-    constructor(address[] memory _owners, uint _numConfirmationsRequired) ERC20("Staked FOLD", "stFOLD") {
+    constructor(address[] memory _owners, uint _numConfirmationsRequired) {
         deployed = block.timestamp;
         minDuration = 1 weeks;
 
@@ -397,73 +370,20 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
     function _roll() internal returns (uint current_week) { // rollOver week
         current_week = (block.timestamp - deployed) / 1 weeks;
         // if the vault was emptied then we don't need to roll over past liquidity
-        if (totalsWETH[current_week] == 0 && liquidityWETH > 0) {
-            totalsWETH[current_week] = liquidityWETH;
+        if (totalsETH[current_week] == 0 && liquidityETH > 0) {
+            totalsETH[current_week] = liquidityETH;
         } // if the vault was emptied then we don't need to roll over past liquidity
         if (totalsUSDC[current_week] == 0 && liquidityUSDC > 0) {
             totalsUSDC[current_week] = liquidityUSDC;
         }
     }
 
-    //@notice Function to withdraw assets from the mevEth contract
-    /// @param useQueue Flag whether to use the withdrawal queue
-    /// @param receiver The address user whom should receive the mevEth out
-    /// @param owner The address of the owner of the mevEth
-    /// @param assets The amount of assets that should be withdrawn
-    /// @param shares shares that will be burned
-    function _withdraw(bool useQueue, address receiver, address owner, uint256 assets, uint256 shares) internal {
-        // If withdraw is less than the minimum deposit / withdraw amount, revert
-        if (assets < MIN_WITHDRAWAL) revert MevEthErrors.WithdrawTooSmall();
-        // Sandwich protection
-        uint256 blockNumber = block.number;
-
-        if (((blockNumber - lastDeposit[msg.sender]) == 0 || (blockNumber - lastDeposit[owner] == 0)) && (blockNumber - lastRewards) == 0) {
-            revert MevEthErrors.SandwichProtection();
-        }
-
-        _updateAllowance(owner, shares);
-
-        // Update the elastic and base
-        fraction.elastic -= uint128(assets);
-        fraction.base -= uint128(shares);
-
-        // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
-        _burn(owner, shares);
-
-        uint availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
-        uint amountToSend = assets;
-        if (availableBalance < assets) {
-            if (!useQueue) revert MevEthErrors.NotEnoughEth();
-            // Available balance is sent, and the remainder must be withdrawn via the queue
-            uint256 amountOwed = assets - availableBalance;
-            ++queueLength;
-            withdrawalQueue[queueLength] = WithdrawalTicket({claimed: false,
-                receiver: receiver, amount: uint128(amountOwed),
-                accumulatedAmount: withdrawalQueue[queueLength - 1].accumulatedAmount + uint128(amountOwed)
-            });
-            emit WithdrawalQueueOpened(receiver, queueLength, amountOwed);
-            amountToSend = availableBalance;
-        }
-        if (amountToSend != 0) {
-            // As with ERC4626, we log assets and shares as if there is no queue, and everything has been withdrawn
-            // as this most closely resembles what is happened
-            emit Withdraw(msg.sender, owner, receiver, assets, shares);
-
-            IWETH(WETH).deposit{ value: amountToSend }();
-            IWETH(WETH).safeTransfer(receiver, amountToSend);
-        }
-    }
-
-
-    function withdraw(uint positionValue) external { //
-
-    }
-
     /**
      * @dev Withdraw UniV3 LP deposit from vault (changing the owner back to original)
      */
-    function withdrawToken(uint tokenId) external {
+    function withdrawToken(uint tokenId, uint percent) external {
         uint timestamp = depositTimestamps[msg.sender][tokenId]; // verify that a deposit exists
+        // require(percent >= 1 && percent <= 100, "FOLDstaking::withdraw: bad percent of deposit");
         require(timestamp > 0, "FOLDstaking::withdraw: no owner exists for this tokenId");
         require( // how long this deposit has been in the vault
             (block.timestamp - timestamp) > minLockDuration,
@@ -471,6 +391,7 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
         );
         (address token0, , uint128 liquidity) = _getPositionInfo(tokenId);
         uint week_iterator = (timestamp - deployed) / 1 weeks;
+        // liquidity *= percent / 100;
 
         // could've deposited right before the end of the week, so need a bit of granularity
         // otherwise an unfairly large portion of rewards may be obtained by staker
@@ -483,7 +404,7 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
         if (token0 == WETH) {
             uint current_week = _roll();
             while (week_iterator < current_week) {
-                uint totalThisWeek = totalsWETH[week_iterator];
+                uint totalThisWeek = totalsETH[week_iterator];
                 if (totalThisWeek > 0) {
                     // need to check lest div by 0
                     // staker's share of rewards for given week
@@ -496,8 +417,8 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
             delta = so_far - (current_week * HOURS_PER_WEEK);
             // the last reward will be a fraction of a whole week's worth
             reward = (delta * weeklyReward) / HOURS_PER_WEEK; // because we're in the middle of a current week
-            totalReward += (reward * liquidity) / totalLiquidityWETH;
-            totalLiquidityWETH -= liquidity;
+            totalReward += (reward * liquidity) / liquidityETH;
+            liquidityETH -= liquidity;
         } else if (token0 == USDC) {
             uint current_week = _roll();
             while (week_iterator < current_week) {
@@ -514,18 +435,21 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
             delta = so_far - (current_week * HOURS_PER_WEEK);
             // the last reward will be a fraction of a whole week's worth
             reward = (delta * weeklyReward) / HOURS_PER_WEEK; // because we're in the middle of a current week
-            totalReward += (reward * liquidity) / totalLiquidityUSDC;
-            totalLiquidityUSDC -= liquidity;
+            totalReward += (reward * liquidity) / liquidityUSDC;
+            liquidityUSDC -= liquidity;
         }
-        delete depositTimestamps[msg.sender][tokenId];
+        // if (percent == 100) {
+            delete depositTimestamps[msg.sender][tokenId];    
+        // }
+        // else { // TODO unwrap NFT
+        //   depositTimestamps[msg.sender][tokenId] = block.timestamp;
+        // }
         IERC20(WETH).transfer(msg.sender, totalReward);
         // transfer ownership back to the original LP token owner
         nonfungiblePositionManager.transferFrom(address(this), msg.sender, tokenId);
 
         emit Withdrawal(tokenId, msg.sender, totalReward);
     }
-
-
     
     /*«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-*/
     /*              THREE TYPES OF DEPOSIT FUNCTIONS              */
@@ -534,12 +458,12 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
     // 2. user already has an NFT (with ticks applied), just stake it
     // 3. user knows the ticks, but we create the NFT for them instead
 
-    function deposit(address beneficiary, uint amount, address token) external {
-        Deposit storage d = totals[beneficiary];
+    function deposit(address beneficiary, uint amount, address token) external payable {
+        LP storage d = totals[beneficiary];
         uint weth;
         if (token == address(0)) {
+            require(msg.value > 0, "must attach value");
             weth = msg.value;
-            require(msg.value);
         } else {
             (uint usdc, uint fold) = _valid_token(token, amount);
             IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
@@ -547,8 +471,41 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
             d.usdc += usdc; d.fold += fold;
         }
         weth += amount;
+        // TODO use the price ticks from the medianizer to create NFT
 
+        // TODO _addLiquidity
     }
+
+    function deposit(AddLiquidityParams calldata params)
+        external payable 
+        returns (
+            uint256 shares, uint128 addedLiquidity,
+            uint256 amount0, uint256 amount1
+        )
+    {
+        (uint128 existingLiquidity, , , , ) = IUniswapV3Pool(params.key.pool).positions(
+            keccak256(
+                abi.encodePacked(
+                    address(this),
+                    params.key.tickLower,
+                    params.key.tickUpper
+                )
+            )
+        );
+        (addedLiquidity, amount0, amount1) = _addLiquidity(params);
+        // shares = _mintShares(params.key,
+        //     params.recipient,
+        //     addedLiquidity,
+        //     existingLiquidity
+        // ); 
+        // TODO update liquidityUSDC or liquidityETH with existingLiquidity + addedLiquidity
+        
+        emit Deposit(keccak256(abi.encode(params.key)),
+            addedLiquidity, amount0, amount1,
+            shares
+        );
+    }
+    
 
     /**
      * @dev This is one way of treating deposits.
@@ -559,7 +516,7 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
      * the relay (against outages in mevAuction)
      */
     function depositNFT(uint tokenId) external {
-        _depositNFT(uint tokenId, msg.sender);
+        _depositNFT(tokenId, msg.sender);
         nonfungiblePositionManager.transferFrom(msg.sender, address(this), tokenId);
         emit DepositNFT(tokenId, msg.sender);
     }
@@ -572,21 +529,20 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
         require(liquidity > 0, "FOLDstaking::deposit: cannot deposit empty amount");
 
         if (token0 == WETH) {
-            totalsWETH[_roll()] += liquidity;
-            totalLiquidityWETH += liquidity;
+            totalsETH[_roll()] += liquidity;
+            liquidityETH += liquidity;
         } else if (token0 == USDC) {
             totalsUSDC[_roll()] += liquidity;
-            totalLiquidityUSDC += liquidity;
+            liquidityUSDC += liquidity;
         } else {
             revert UnsupportedToken();
         }
         depositTimestamps[from][tokenId] = block.timestamp;
         // transfer ownership of LP share to this contract
-        require(totalLiquidityWETH <= maxTotalWETH 
-        && totalLiquidityUSDC <= maxTotalUSDC, 
+        require(liquidityETH <= maxTotalWETH 
+        && liquidityUSDC <= maxTotalUSDC, 
         "FOLDstaking::deposit: totalLiquidity exceed max");
     }
-    
 
 
      /** Whenever an {IERC721} `tokenId` token is transferred to this contract:
@@ -600,17 +556,15 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
      *   If any other value is returned or the interface is not implemented
      *   by the recipient, the transfer will be reverted.
      */
-      function onERC721Received(address, 
+    function onERC721Received(address, 
         address from, // previous owner's
         uint tokenId, bytes calldata data
     ) external override returns (bytes4) { 
-        _depositNFT(uint tokenId, from);
+        _depositNFT(tokenId, from);
         emit DepositNFT(tokenId, from);
         return this.onERC721Received.selector;
     }
 
-
-    /// @notice Add liquidity to an initialized pool
     function _addLiquidity(AddLiquidityParams memory params)
         internal
         returns (
@@ -622,17 +576,15 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
         if (params.amount0Desired == 0 && params.amount1Desired == 0) {
             return (0, 0, 0);
         }
-
         // compute the liquidity amount
         {
-            (uint160 sqrtPriceX96, , , , , , ) = params.key.pool.slot0();
+            (uint160 sqrtPriceX96, , , , , , ) = IUniswapV3Pool(params.key.pool).slot0();
             uint160 sqrtRatioAX96 = TickMath.getSqrtRatioAtTick(
                 params.key.tickLower
             );
             uint160 sqrtRatioBX96 = TickMath.getSqrtRatioAtTick(
                 params.key.tickUpper
             );
-
             liquidity = LiquidityAmounts.getLiquidityForAmounts(
                 sqrtPriceX96,
                 sqrtRatioAX96,
@@ -641,133 +593,22 @@ contract FOLDstaking is ERC20, IUniswapV3MintCallback, IERC721Receiver {
                 params.amount1Desired
             );
         }
-
-        (amount0, amount1) = params.key.pool.mint(
-            params.recipient,
+        (amount0, amount1) = IUniswapV3Pool(params.key.pool).mint(
+            address(this), // recipient
             params.key.tickLower,
             params.key.tickUpper,
             liquidity,
             abi.encode(
                 MintCallbackData({
-                    token0: params.key.pool.token0(),
-                    token1: params.key.pool.token1(),
-                    fee: params.key.pool.fee(),
-                    payer: params.payer
-                })
-            )
+                    token0: IUniswapV3Pool(params.key.pool).token0(),
+                    token1: IUniswapV3Pool(params.key.pool).token1(),
+                    fee: IUniswapV3Pool(params.key.pool).fee(),
+                    payer: msg.sender
+                }))
         );
-
-        require(
-            amount0 >= params.amount0Min && amount1 >= params.amount1Min,
+        require(amount0 >= params.amount0Min 
+            && amount1 >= params.amount1Min,
             "SLIP"
         );
     }
-
-
-    // compound() for compounding trading fees 
-    // back into the liquidity pool (Keeper)...
-    function compound(Key calldata key) // she's the eighth wonder of the world
-        external
-        returns (
-            uint128 addedLiquidity,
-            uint amount0,
-            uint amount1
-        )
-    {
-
-        // trigger an update of the position fees owed snapshots if it has any liquidity
-        key.pool.burn(key.tickLower, key.tickUpper, 0);
-        (, , , uint128 cachedFeesOwed0, uint128 cachedFeesOwed1) = key
-            .pool
-            .positions(
-                keccak256(
-                    abi.encodePacked(
-                        address(this),
-                        key.tickLower,
-                        key.tickUpper
-                    )
-                )
-            );
-
-        /// -----------------------------------------------------------
-        /// amount0, amount1 are multi-purposed, see comments below
-        /// -----------------------------------------------------------
-        amount0 = cachedFeesOwed0;
-        amount1 = cachedFeesOwed1;
-
-        /// -----------------------------------------------------------
-        /// amount0, amount1 now store the updated amounts of fee owed
-        /// -----------------------------------------------------------
-
-        // the fee is likely not balanced (i.e. tokens will be left over after adding liquidity)
-        // so here we compute which token to fully claim and which token to partially claim
-        // so that we only claim the amounts we need
-
-        {
-            (uint160 sqrtRatioX96, , , , , , ) = key.pool.slot0();
-            uint160 sqrtRatioAX96 = TickMath.getSqrtRatioAtTick(key.tickLower);
-            uint160 sqrtRatioBX96 = TickMath.getSqrtRatioAtTick(key.tickUpper);
-
-            // compute the maximum liquidity addable using the accrued fees
-            uint128 maxAddLiquidity = LiquidityAmounts.getLiquidityForAmounts(
-                sqrtRatioX96,
-                sqrtRatioAX96,
-                sqrtRatioBX96,
-                amount0,
-                amount1
-            );
-
-            // compute the token amounts corresponding to the max addable liquidity
-            (amount0, amount1) = LiquidityAmounts.getAmountsForLiquidity(
-                sqrtRatioX96,
-                sqrtRatioAX96,
-                sqrtRatioBX96,
-                maxAddLiquidity
-            );
-        }
-
-        /// -----------------------------------------------------------
-        /// amount0, amount1 now store the amount of fees to claim
-        /// -----------------------------------------------------------
-
-        // the actual amounts collected are returned
-        // tokens are transferred to address(this)
-        (amount0, amount1) = key.pool.collect(
-            address(this),
-            key.tickLower,
-            key.tickUpper,
-            uint128(amount0),
-            uint128(amount1)
-        );
-
-        /// -----------------------------------------------------------
-        /// amount0, amount1 now store the fees claimed
-        /// -----------------------------------------------------------
-
-        // add fees to Uniswap pool
-        (addedLiquidity, amount0, amount1) = _addLiquidity(
-            AddLiquidityParams({key: key,
-                recipient: address(this),
-                payer: address(this),
-                amount0Desired: amount0,
-                amount1Desired: amount1,
-                amount0Min: 0,
-                amount1Min: 0
-            })
-        );
-    
-
-        /// -----------------------------------------------------------
-        /// amount0, amount1 now store the tokens added as liquidity
-        /// -----------------------------------------------------------
-
-        emit Compound(
-            msg.sender,
-            keccak256(abi.encode(key)),
-            addedLiquidity,
-            amount0,
-            amount1
-        );
-    }
-
 }
