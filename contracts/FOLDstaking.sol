@@ -14,8 +14,12 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
  */
 
 import "./Dependencies/SafeTransferLib.sol";
-import {IUniswapV3Pool} from "./Dependencies/IUniswapV3Pool.sol";
-import {TickMath, FullMath, LiquidityAmounts} from "./Dependencies/LiquidityAmounts.sol";
+import "./Dependencies/TransferHelper.sol";
+
+// Alternative way of working with pools instead of NFPM, used by Bunni
+// isssue: does not return NFTid when minting, requires using own keys (abi.encode)
+// import {IUniswapV3Pool} from "./Dependencies/IUniswapV3Pool.sol";
+// import {TickMath, FullMath, LiquidityAmounts} from "./Dependencies/LiquidityAmounts.sol";
 
 interface IWETH is IERC20 {
     function deposit() external payable;
@@ -23,6 +27,39 @@ interface IWETH is IERC20 {
 }
 
 interface INonfungiblePositionManager is IERC721 { // reward QD<>USDT or QD<>WETH liquidity deposits
+    
+    struct MintParams {
+        address token0;
+        address token1;
+        uint24 fee;
+        int24 tickLower;
+        int24 tickUpper;
+        uint256 amount0Desired;
+        uint256 amount1Desired;
+        uint256 amount0Min;
+        uint256 amount1Min;
+        address recipient;
+        uint256 deadline;
+    }
+
+    /// @notice Creates a new position wrapped in a NFT
+    /// @dev Call this when the pool does exist and is initialized. Note that if the pool is created but not initialized
+    /// a method does not exist, i.e. the pool is assumed to be initialized.
+    /// @param params The params necessary to mint a position, encoded as `MintParams` in calldata
+    /// @return tokenId The ID of the token that represents the minted position
+    /// @return liquidity The amount of liquidity for this position
+    /// @return amount0 The amount of token0
+    /// @return amount1 The amount of token1
+    function mint(MintParams calldata params)
+        external
+        payable
+        returns (
+            uint256 tokenId,
+            uint128 liquidity,
+            uint256 amount0,
+            uint256 amount1
+        );
+
     function positions(uint tokenId) external
     view returns (uint96 nonce,address operator,
         address token0, address token1, uint24 fee,
@@ -35,22 +72,22 @@ interface INonfungiblePositionManager is IERC721 { // reward QD<>USDT or QD<>WET
 
 /// @title Callback for IUniswapV3PoolActions#mint
 /// @notice Any contract that calls IUniswapV3PoolActions#mint must implement this interface
-interface IUniswapV3MintCallback {
-    /// @notice Called to `msg.sender` after minting liquidity to a position from IUniswapV3Pool#mint.
-    /// @dev In the implementation you must pay the pool tokens owed for the minted liquidity.
-    /// The caller of this method must be checked to be a UniswapV3Pool deployed by the canonical UniswapV3Factory.
-    /// @param amount0Owed The amount of token0 due to the pool for the minted liquidity
-    /// @param amount1Owed The amount of token1 due to the pool for the minted liquidity
-    /// @param data Any data passed through by the caller via the IUniswapV3PoolActions#mint call
-    function uniswapV3MintCallback(
-        uint256 amount0Owed,
-        uint256 amount1Owed,
-        bytes calldata data
-    ) external;
-}
+// interface IUniswapV3MintCallback {
+//     /// @notice Called to `msg.sender` after minting liquidity to a position from IUniswapV3Pool#mint.
+//     /// @dev In the implementation you must pay the pool tokens owed for the minted liquidity.
+//     /// The caller of this method must be checked to be a UniswapV3Pool deployed by the canonical UniswapV3Factory.
+//     /// @param amount0Owed The amount of token0 due to the pool for the minted liquidity
+//     /// @param amount1Owed The amount of token1 due to the pool for the minted liquidity
+//     /// @param data Any data passed through by the caller via the IUniswapV3PoolActions#mint call
+//     function uniswapV3MintCallback(
+//         uint256 amount0Owed,
+//         uint256 amount1Owed,
+//         bytes calldata data
+//     ) external;
+// }
 
 // ERC20 represents the shareToken  
-contract FOLDstaking is IUniswapV3MintCallback, IERC721Receiver {
+contract FOLDstaking is IERC721Receiver {
     
     using SafeTransferLib for IERC20;
     using SafeTransferLib for IWETH;
@@ -77,53 +114,6 @@ contract FOLDstaking is IUniswapV3MintCallback, IERC721Receiver {
 
     INonfungiblePositionManager public immutable nonfungiblePositionManager;
 
-    /// @param pool either FOLD_USDC or FOLD_WETH
-    /// @param tickLower The lower tick of the UniV3 LP position
-    /// @param tickUpper The upper tick of the UniV3 LP position
-    struct Key { // 
-        address pool; // the FOLD_WETH pool or the FOLD_USDC pool 
-        int24 tickLower;
-        int24 tickUpper;
-    }
-
-    /// @param token0 The token0 of the Uniswap pool
-    /// @param token1 The token1 of the Uniswap pool
-    /// @param fee The fee tier of the Uniswap pool
-    /// @param payer The address to pay for the required tokens
-    struct MintCallbackData {
-        address token0;
-        address token1;
-        uint24 fee;
-        address payer;
-    }
-    
-    /// @param key The pool and price range of the liquidity position
-    /// @param recipient The recipient of the liquidity position
-    /// @param amount0Desired The token0 amount to use
-    /// @param amount1Desired The token1 amount to use
-    /// @param amount0Min The minimum token0 amount to use
-    /// @param amount1Min The minimum token1 amount to use
-    struct AddLiquidityParams {
-        Key key;
-        uint256 amount0Desired;
-        uint256 amount1Desired;
-        uint256 amount0Min;
-        uint256 amount1Min;
-    }
-
-    /// @param key The Bunni position's key
-    /// @param recipient The user if not withdrawing ETH, address(0) if withdrawing ETH
-    /// @param shares The amount of ERC20 tokens (this) to burn,
-    /// @param amount0Min The minimum amount of token0 that should be accounted for the burned liquidity,
-    /// @param amount1Min The minimum amount of token1 that should be accounted for the burned liquidity,
-    struct WithdrawParams {
-        Key key;
-        address recipient;
-        uint256 shares;
-        uint256 amount0Min;
-        uint256 amount1Min;
-    }
-
     struct Transaction {
         address to;
         uint value;
@@ -136,7 +126,6 @@ contract FOLDstaking is IUniswapV3MintCallback, IERC721Receiver {
     // You can have multiple positions per address (representing different ranges).
     
     mapping(address => LP) totals;
-    mapping(address => Key[]) keys;
 
     struct LP { // total LP deposit, including both NFT deposits, and the other kind
         uint fold;
@@ -184,20 +173,6 @@ contract FOLDstaking is IUniswapV3MintCallback, IERC721Receiver {
         uint value
     );
 
-    /// @notice Emitted when liquidity is increased via deposit
-    /// @param keyHash The hash of the position's key
-    /// @param liquidity The amount by which liquidity was increased
-    /// @param amount0 The amount of token0 that was paid for the increase in liquidity
-    /// @param amount1 The amount of token1 that was paid for the increase in liquidity
-    /// @param shares The amount of share tokens minted to the recipient
-    event Deposit(
-        bytes32 indexed keyHash,
-        uint128 liquidity,
-        uint256 amount0,
-        uint256 amount1,
-        uint256 shares
-    );
-
     modifier onlyOwner() {
         require(isOwner[msg.sender], "not owner");
         _;
@@ -226,41 +201,6 @@ contract FOLDstaking is IUniswapV3MintCallback, IERC721Receiver {
         fold = token == FOLD ? amount : 0;
         usdc = token == USDC ? amount : 0;
         require(fold > 0 || usdc > 0 || token == WETH, "token type");
-    }
-    
-    function uniswapV3MintCallback(
-        uint256 amount0Owed,
-        uint256 amount1Owed,
-        bytes calldata data
-    ) external override {
-        require(msg.sender == FOLD_WETH || msg.sender == FOLD_USDC, "callback");
-        MintCallbackData memory decodedData = abi.decode(
-            data, (MintCallbackData)
-        );
-        if (amount0Owed > 0)
-            pay(decodedData.token0, decodedData.payer, msg.sender, amount0Owed);
-        if (amount1Owed > 0)
-            pay(decodedData.token1, decodedData.payer, msg.sender, amount1Owed);
-    }
-
-
-    /// @param token The token to pay
-    /// @param payer The entity that must pay
-    /// @param recipient The entity that will receive payment
-    /// @param value The amount to pay
-    function pay(
-        address token,
-        address payer,
-        address recipient,
-        uint256 value
-    ) internal {
-        if (payer == address(this)) {
-            // pay with tokens already in the contract (for the exact input multihop case)
-            IERC20(token).safeTransfer(recipient, value);
-        } else {
-            // pull payment
-            IERC20(token).safeTransferFrom(payer, recipient, value);
-        }
     }
 
     /**
@@ -313,7 +253,6 @@ contract FOLDstaking is IUniswapV3MintCallback, IERC721Receiver {
         maxTotalWETH = _newMaxTotalWETH;
         emit SetMaxTotalWETH(_newMaxTotalWETH);
     }
-
     
     function submitTransfer(address _to, uint _value, 
         address _token) public onlyOwner {
@@ -377,9 +316,9 @@ contract FOLDstaking is IUniswapV3MintCallback, IERC721Receiver {
             totalsUSDC[current_week] = liquidityUSDC;
         }
     }
-
+    
     /**
-     * @dev Withdraw UniV3 LP deposit from vault (changing the owner back to original)
+     * @dev Unstake UniV3 LP deposit from vault (changing the owner back to original)
      */
     function withdrawToken(uint tokenId, uint percent) external {
         uint timestamp = depositTimestamps[msg.sender][tokenId]; // verify that a deposit exists
@@ -467,45 +406,21 @@ contract FOLDstaking is IUniswapV3MintCallback, IERC721Receiver {
         } else {
             (uint usdc, uint fold) = _valid_token(token, amount);
             IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
-            if (token == WETH) { IWETH(WETH).withdraw(amount); }
-            d.usdc += usdc; d.fold += fold;
+            if (token == WETH) { 
+                IWETH(WETH).withdraw(amount); 
+                weth += amount;
+            } else {
+                d.usdc += usdc; d.fold += fold; // one of these will be 0
+            }
+            TransferHelper.safeApprove(token, address(nonfungiblePositionManager), amount);
         }
-        weth += amount;
+        
         // TODO use the price ticks from the medianizer to create NFT
 
         // TODO _addLiquidity
-    }
-
-    function deposit(AddLiquidityParams calldata params)
-        external payable 
-        returns (
-            uint256 shares, uint128 addedLiquidity,
-            uint256 amount0, uint256 amount1
-        )
-    {
-        (uint128 existingLiquidity, , , , ) = IUniswapV3Pool(params.key.pool).positions(
-            keccak256(
-                abi.encodePacked(
-                    address(this),
-                    params.key.tickLower,
-                    params.key.tickUpper
-                )
-            )
-        );
-        (addedLiquidity, amount0, amount1) = _addLiquidity(params);
-        // shares = _mintShares(params.key,
-        //     params.recipient,
-        //     addedLiquidity,
-        //     existingLiquidity
-        // ); 
-        // TODO update liquidityUSDC or liquidityETH with existingLiquidity + addedLiquidity
         
-        emit Deposit(keccak256(abi.encode(params.key)),
-            addedLiquidity, amount0, amount1,
-            shares
-        );
-    }
-    
+        TransferHelper.safeApprove(USDC, address(nonfungiblePositionManager), amount);
+    }    
 
     /**
      * @dev This is one way of treating deposits.
@@ -565,50 +480,5 @@ contract FOLDstaking is IUniswapV3MintCallback, IERC721Receiver {
         return this.onERC721Received.selector;
     }
 
-    function _addLiquidity(AddLiquidityParams memory params)
-        internal
-        returns (
-            uint128 liquidity,
-            uint256 amount0,
-            uint256 amount1
-        )
-    {
-        if (params.amount0Desired == 0 && params.amount1Desired == 0) {
-            return (0, 0, 0);
-        }
-        // compute the liquidity amount
-        {
-            (uint160 sqrtPriceX96, , , , , , ) = IUniswapV3Pool(params.key.pool).slot0();
-            uint160 sqrtRatioAX96 = TickMath.getSqrtRatioAtTick(
-                params.key.tickLower
-            );
-            uint160 sqrtRatioBX96 = TickMath.getSqrtRatioAtTick(
-                params.key.tickUpper
-            );
-            liquidity = LiquidityAmounts.getLiquidityForAmounts(
-                sqrtPriceX96,
-                sqrtRatioAX96,
-                sqrtRatioBX96,
-                params.amount0Desired,
-                params.amount1Desired
-            );
-        }
-        (amount0, amount1) = IUniswapV3Pool(params.key.pool).mint(
-            address(this), // recipient
-            params.key.tickLower,
-            params.key.tickUpper,
-            liquidity,
-            abi.encode(
-                MintCallbackData({
-                    token0: IUniswapV3Pool(params.key.pool).token0(),
-                    token1: IUniswapV3Pool(params.key.pool).token1(),
-                    fee: IUniswapV3Pool(params.key.pool).fee(),
-                    payer: msg.sender
-                }))
-        );
-        require(amount0 >= params.amount0Min 
-            && amount1 >= params.amount1Min,
-            "SLIP"
-        );
-    }
+   
 }
