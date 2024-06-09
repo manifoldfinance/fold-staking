@@ -54,7 +54,7 @@
         "eslint": "^7.28.0",
         "eslint-config-prettier": "^8.3.0",
         "eslint-plugin-unused-imports": "^1.1.1",
-        "ethers": "^6.1.11",
+        "ethers": "^6.13.0",
         "hardhat": "^2.22.3",
         "hardhat-contract-sizer": "^2.10.0",
         "hardhat-gas-reporter": "^1.0.10",

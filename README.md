@@ -2,9 +2,13 @@
 ## Introduction 
 
 All the validators that are connected to the Manifold relay can ONLY connect
-to the Manifold relay (for mevAuction). If there's a service outage (of the relay). Manifold needs to be able to cover the cost (of lost opportunity) for validators.
+to the Manifold relay (for mevAuction). If there's a service outage (of the relay) Manifold needs to be able to cover the cost (of lost opportunity) for validators.
 
-Stakers into the `FOLDstaking.sol` contract are underwriting this risk (captive insurance) of missing out on blocks. The contract keeps track of the durations of each deposit. Rewards are paid individually to each depositor.
+Stakers into the `FOLDstaking.sol` contract are underwriting this risk ([captive insurance](https://forums.manifoldfinance.com/t/captive-insurance-and-fold-staking/562)) of missing out on blocks. The contract keeps track of the durations of each deposit. Rewards are paid individually to each depositor.
+
+Staking FOLD tokens transfers LP deposit ownership to the `FOLDstaking` contract. The contract's owners (msig) require the ability to permanently claim FOLD balances in the interest of captive insurance claims.
+
+In exchange, LPs are rewarder for staking (in addition to swap fees), and the compounding of their deposits' accrued fees is automated. This serves to incentivize a maximum number of compounds at optimal times with regards to gas costs.
 
 Multiple deposits may be made of several V3 positions. The duration of each deposit as well as its share of the total liquidity deposited in the vault (for that pair) determines how much the reward will be (it's paid from the WETH balance of the contract).
 

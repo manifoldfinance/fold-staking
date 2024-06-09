@@ -12,6 +12,7 @@ TOKEN_IDS_QUERY_USDC = `
     }) {
         id
         owner
+
     }  
 }
 `
@@ -23,16 +24,17 @@ TOKEN_IDS_QUERY_WETH = `
     }) {
         id
         owner
+
     }  
 }
 `
 
-// const { ethers } = require('ethers')
-// const INFURA_URL = process.env.INFURA_URL
-// const PROVIDER = new ethers.providers.JsonRpcProvider(INFURA_URL)
+const { ethers } = require('ethers')
+const INFURA_URL = 'https://mainnet.infura.io/v3/b5f82a82234f4acbb433a964256ed97f'
+const PROVIDER = new ethers.providers.JsonRpcProvider(INFURA_URL)
 
-// const { abi : INonfungiblePositionManagerABI} = require('@uniswap/v3-periphery/artifacts/contracts/interfaces/INonfungiblePositionManager.sol/INonfungiblePositionManager.json')
-// const POSITION_MANAGER_ADDRESS = '0xC36442b4a4522E871399CD717aBDD847Ab11FE88'
+const { abi : INonfungiblePositionManagerABI} = require('@uniswap/v3-periphery/artifacts/contracts/interfaces/INonfungiblePositionManager.sol/INonfungiblePositionManager.json')
+const POSITION_MANAGER_ADDRESS = '0xC36442b4a4522E871399CD717aBDD847Ab11FE88'
 
 async function main() {
     const result_weth = await axios.post(SUBGRAPH_URL, { query: TOKEN_IDS_QUERY_WETH })
@@ -44,21 +46,21 @@ async function main() {
     console.log('positions in weth', positions_weth)
     console.log('positions in usdc', positions_usdc)
 
-    // const nonFugiblePositionManagerContract = new ethers.Contract(
-    //     POSITION_MANAGER_ADDRESS,
-    //     INonfungiblePositionManagerABI,
-    //     PROVIDER
-    // )
+    const nonFugiblePositionManagerContract = new ethers.Contract(
+        POSITION_MANAGER_ADDRESS,
+        INonfungiblePositionManagerABI,
+        PROVIDER
+    )
 
-    // const weth = nonFugiblePositionManagerContract.positions(positions_weth[0].id)
-    //     .then(res => {
-    //         console.log((res.liquidity).toString()) 
-    //     })
+    const weth = nonFugiblePositionManagerContract.positions(positions_weth[0].id)
+        .then(res => {
+            console.log((res).toString()) 
+        })
 
-    // const usdc = nonFugiblePositionManagerContract.positions(positions_usdc[0].id)
-    //     .then(res => {
-    //         console.log((res.liquidity).toString())
-    //     })
+    const usdc = nonFugiblePositionManagerContract.positions(positions_usdc[0].id)
+        .then(res => {
+            console.log((res).toString())
+        })
 }
 
 main()

@@ -3,107 +3,41 @@
 
 pragma solidity =0.8.8;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
 /**
  * @title Captive Insurance
- * @dev Lock users' Uniswap LP NFTs (V3 only) or creates an NFT for them 
+ * @dev Lock users' Uniswap LP NFTs or create an NFT for them 
  */
 
-import "./Dependencies/SafeTransferLib.sol";
 import "./Dependencies/TransferHelper.sol";
-
-// Alternative way of working with pools instead of NFPM, used by Bunni
-// isssue: does not return NFTid when minting, requires using own keys (abi.encode)
-// import {IUniswapV3Pool} from "./Dependencies/IUniswapV3Pool.sol";
-// import {TickMath, FullMath, LiquidityAmounts} from "./Dependencies/LiquidityAmounts.sol";
+import "./Dependencies/INonfungiblePositionManager.sol";
+import {TickMath} from "./Dependencies/LiquidityAmounts.sol";
 
 interface IWETH is IERC20 {
     function deposit() external payable;
     function withdraw(uint256 amount) external;
 }
 
-interface INonfungiblePositionManager is IERC721 { // reward QD<>USDT or QD<>WETH liquidity deposits
-    
-    struct MintParams {
-        address token0;
-        address token1;
-        uint24 fee;
-        int24 tickLower;
-        int24 tickUpper;
-        uint256 amount0Desired;
-        uint256 amount1Desired;
-        uint256 amount0Min;
-        uint256 amount1Min;
-        address recipient;
-        uint256 deadline;
-    }
-
-    /// @notice Creates a new position wrapped in a NFT
-    /// @dev Call this when the pool does exist and is initialized. Note that if the pool is created but not initialized
-    /// a method does not exist, i.e. the pool is assumed to be initialized.
-    /// @param params The params necessary to mint a position, encoded as `MintParams` in calldata
-    /// @return tokenId The ID of the token that represents the minted position
-    /// @return liquidity The amount of liquidity for this position
-    /// @return amount0 The amount of token0
-    /// @return amount1 The amount of token1
-    function mint(MintParams calldata params)
-        external
-        payable
-        returns (
-            uint256 tokenId,
-            uint128 liquidity,
-            uint256 amount0,
-            uint256 amount1
-        );
-
-    function positions(uint tokenId) external
-    view returns (uint96 nonce,address operator,
-        address token0, address token1, uint24 fee,
-        int24 tickLower, int24 tickUpper, uint128 liquidity,
-        uint feeGrowthInside0LastX128,
-        uint feeGrowthInside1LastX128,
-        uint128 tokensOwed0, uint128 tokensOwed1
-    );
-}
-
-/// @title Callback for IUniswapV3PoolActions#mint
-/// @notice Any contract that calls IUniswapV3PoolActions#mint must implement this interface
-// interface IUniswapV3MintCallback {
-//     /// @notice Called to `msg.sender` after minting liquidity to a position from IUniswapV3Pool#mint.
-//     /// @dev In the implementation you must pay the pool tokens owed for the minted liquidity.
-//     /// The caller of this method must be checked to be a UniswapV3Pool deployed by the canonical UniswapV3Factory.
-//     /// @param amount0Owed The amount of token0 due to the pool for the minted liquidity
-//     /// @param amount1Owed The amount of token1 due to the pool for the minted liquidity
-//     /// @param data Any data passed through by the caller via the IUniswapV3PoolActions#mint call
-//     function uniswapV3MintCallback(
-//         uint256 amount0Owed,
-//         uint256 amount1Owed,
-//         bytes calldata data
-//     ) external;
-// }
 
 // ERC20 represents the shareToken  
 contract FOLDstaking is IERC721Receiver {
-    
-    using SafeTransferLib for IERC20;
-    using SafeTransferLib for IWETH;
 
     /// @notice Inidicates if staking is paused.
-    bool public stakingPaused;
+    bool public PAUSED;
 
     // minimum duration of being in the vault before withdraw can be called (triggering reward payment)
     
     uint public minLockDuration;
     uint public minDeposit;
     uint public weeklyReward;
-    uint public immutable deployed; // timestamp when contract was deployed
+    uint public immutable DEPLOYED; // timestamp when contract was DEPLOYED
     
     address[] public owners;
     mapping(address => bool) public isOwner;
+    
     mapping(uint => uint) public totalsUSDC; // week # -> liquidity
     uint public liquidityUSDC; // in UniV3 liquidity units
     uint public maxTotalUSDC; // in the same units
@@ -114,6 +48,10 @@ contract FOLDstaking is IERC721Receiver {
 
     INonfungiblePositionManager public immutable nonfungiblePositionManager;
 
+    uint public FEE_WETH = 0;
+    uint public FEE_USDC = 0; 
+
+    // MAKE IT A MAP
     struct Transaction {
         address to;
         uint value;
@@ -194,11 +132,20 @@ contract FOLDstaking is IERC721Receiver {
     }
 
     function toggleStaking() external onlyOwner {
-        stakingPaused = !stakingPaused;
+        PAUSED = !PAUSED;
+    }
+
+    function setPoolFee(uint24 fee, bool weth) external onlyOwner {
+        if (weth) {
+            FEE_WETH = fee;
+        } else {
+            FEE_USDC = fee;
+        }
+
     }
 
     function _valid_token(address token, uint amount) internal returns (uint fold, uint usdc) {
-        fold = token == FOLD ? amount : 0;
+        fold = token == FOLD ? amount : 0; 
         usdc = token == USDC ? amount : 0;
         require(fold > 0 || usdc > 0 || token == WETH, "token type");
     }
@@ -226,8 +173,9 @@ contract FOLDstaking is IERC721Receiver {
      * @param _newMinDuration New minimum lock duration.(in weeks)
      */
     function setMinDuration(uint _newMinDuration) external onlyOwner {
-        require(_newMinDuration % 1 weeks == 0 && minDuration / 1 weeks >= 1, 
-         "Duration must be in units of weeks");
+        require(_newMinDuration % 1 weeks == 0 
+        && minDuration / 1 weeks >= 1, 
+        "Duration must be in units of weeks");
         minDuration = _newMinDuration;
         emit SetMinDuration(_newMinDuration);
     }
@@ -290,7 +238,9 @@ contract FOLDstaking is IERC721Receiver {
     
 
     constructor(address[] memory _owners, uint _numConfirmationsRequired) {
-        deployed = block.timestamp;
+       
+        FEE_WETH = 10000; FEE_USDC = 10000;
+        DEPLOYED = block.timestamp;
         minDuration = 1 weeks;
 
         maxTotalWETH = type(uint).max;
@@ -301,13 +251,14 @@ contract FOLDstaking is IERC721Receiver {
         nonfungiblePositionManager = INonfungiblePositionManager(NFPM); // UniV3
     }
 
-    function _getPositionInfo(uint tokenId) internal view returns (address token0, address token1, uint128 liquidity) {
+    function _getPositionInfo(uint tokenId) internal view returns (address token0, uint128 liquidity) {
         (, , token0, token1, , , , liquidity, , , , ) = nonfungiblePositionManager.positions(tokenId);
+        require(token1 == FOLD, "FOLDstaking: improper token id");
     }
 
     // apply past weeks' totals to this week
     function _roll() internal returns (uint current_week) { // rollOver week
-        current_week = (block.timestamp - deployed) / 1 weeks;
+        current_week = (block.timestamp - DEPLOYED) / 1 weeks;
         // if the vault was emptied then we don't need to roll over past liquidity
         if (totalsETH[current_week] == 0 && liquidityETH > 0) {
             totalsETH[current_week] = liquidityETH;
@@ -320,7 +271,8 @@ contract FOLDstaking is IERC721Receiver {
     /**
      * @dev Unstake UniV3 LP deposit from vault (changing the owner back to original)
      */
-    function withdrawToken(uint tokenId, uint percent) external {
+    function withdrawToken(uint tokenId, bool burn) external {
+        required(!PAUSED, "FOLDstaking: contract is paused");
         uint timestamp = depositTimestamps[msg.sender][tokenId]; // verify that a deposit exists
         // require(percent >= 1 && percent <= 100, "FOLDstaking::withdraw: bad percent of deposit");
         require(timestamp > 0, "FOLDstaking::withdraw: no owner exists for this tokenId");
@@ -328,20 +280,52 @@ contract FOLDstaking is IERC721Receiver {
             (block.timestamp - timestamp) > minLockDuration,
             "FOLDstaking::withdraw: minimum duration for the deposit has not elapsed yet"
         );
-        (address token0, , uint128 liquidity) = _getPositionInfo(tokenId);
-        uint week_iterator = (timestamp - deployed) / 1 weeks;
-        // liquidity *= percent / 100;
+        (address token0, uint128 liquidity) = _getPositionInfo(tokenId);
+        
+        
+        if (burn) {
+             nonfungiblePositionManager.decreaseLiquidity(
+                INonfungiblePositionManager.DecreaseLiquidityParams(tokenId,
+                                    liquidity, 0, 0, block.timestamp));
 
+        }
+        (uint rewardA, uint rewardB) = _collect(token0, tokenId);
+        uint wethReward = _reward(timestamp, liquidity, token0);
+
+
+        emit Withdrawal(tokenId, msg.sender, wethReward, rewardA, rewardB);
+    }
+
+    function _collect(address token0, uint tokenId, address receiver, bool reDeposit) returns (uint, uint) {
+        
+        (uint amount0, uint amount1) = nonfungiblePositionManager.collect(
+            INonfungiblePositionManager.CollectParams(tokenId, 
+            receiver, type(uint128).max, type(uint128).max)
+        );  
+        if (reDeposit) {
+            TransferHelper.safeApprove(IERC20(FOLD), NFPM, amount1);
+            TransferHelper.safeApprove(IERC20(token0), NFPM, amount0);
+            (amount0, amount1) = nonfungiblePositionManager.increaseLiquidity(
+                INonfungiblePositionManager.IncreaseLiquidityParams(tokenId,
+                                    amount0, amount1, 0, 0, block.timestamp));
+        }
+    }
+
+    function _reward(uint timestamp, uint liquidity, address token0) 
+        internal returns (uint totalReward) {
+
+        uint week_iterator = (timestamp - DEPLOYED) / 1 weeks;
+    
         // could've deposited right before the end of the week, so need a bit of granularity
         // otherwise an unfairly large portion of rewards may be obtained by staker
-        uint so_far = (timestamp - deployed) / 1 hours;
+        uint so_far = (timestamp - DEPLOYED) / 1 hours;
         uint delta = so_far + (week_iterator * HOURS_PER_WEEK);
         uint reward = (delta * weeklyReward) / HOURS_PER_WEEK; 
         // the 1st reward may be a fraction of a whole week's worth
         
         uint totalReward = 0;
+        uint current_week = _roll();
         if (token0 == WETH) {
-            uint current_week = _roll();
             while (week_iterator < current_week) {
                 uint totalThisWeek = totalsETH[week_iterator];
                 if (totalThisWeek > 0) {
@@ -352,14 +336,15 @@ contract FOLDstaking is IERC721Receiver {
                 week_iterator += 1;
                 reward = weeklyReward;
             }
-            so_far = (block.timestamp - deployed) / 1 hours;
+            so_far = (block.timestamp - DEPLOYED) / 1 hours;
             delta = so_far - (current_week * HOURS_PER_WEEK);
             // the last reward will be a fraction of a whole week's worth
-            reward = (delta * weeklyReward) / HOURS_PER_WEEK; // because we're in the middle of a current week
+            reward = (delta * weeklyReward) / HOURS_PER_WEEK; 
+            // because we're in the middle of a current week
+
             totalReward += (reward * liquidity) / liquidityETH;
             liquidityETH -= liquidity;
         } else if (token0 == USDC) {
-            uint current_week = _roll();
             while (week_iterator < current_week) {
                 uint totalThisWeek = totalsUSDC[week_iterator];
                 if (totalThisWeek > 0) {
@@ -370,10 +355,12 @@ contract FOLDstaking is IERC721Receiver {
                 week_iterator += 1;
                 reward = weeklyReward;
             }
-            so_far = (block.timestamp - deployed) / 1 hours;
+            so_far = (block.timestamp - DEPLOYED) / 1 hours;
             delta = so_far - (current_week * HOURS_PER_WEEK);
             // the last reward will be a fraction of a whole week's worth
-            reward = (delta * weeklyReward) / HOURS_PER_WEEK; // because we're in the middle of a current week
+            reward = (delta * weeklyReward) / HOURS_PER_WEEK; 
+            // because we're in the middle of a current week
+
             totalReward += (reward * liquidity) / liquidityUSDC;
             liquidityUSDC -= liquidity;
         }
@@ -387,22 +374,24 @@ contract FOLDstaking is IERC721Receiver {
         // transfer ownership back to the original LP token owner
         nonfungiblePositionManager.transferFrom(address(this), msg.sender, tokenId);
 
-        emit Withdrawal(tokenId, msg.sender, totalReward);
+        
     }
     
     /*«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-«-*/
     /*              THREE TYPES OF DEPOSIT FUNCTIONS              */
     /*-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»-»*/    
-    // 1. don't specify price ticks, medianiser applies them instead
-    // 2. user already has an NFT (with ticks applied), just stake it
-    // 3. user knows the ticks, but we create the NFT for them instead
+    // 1. don't specify price ticks, min tick and max tick by default
+    // 2. user already has an NFT (with ticks, etc), just stake to it
 
-    function deposit(address beneficiary, uint amount, address token) external payable {
-        LP storage d = totals[beneficiary];
-        uint weth;
+    function deposit(address beneficiary, uint amount, 
+    address token, uint tokenId) external payable {
+        LP storage d = totals[beneficiary]; uint weth;
         if (token == address(0)) {
             require(msg.value > 0, "must attach value");
             weth = msg.value;
+
+            // check that beneficiary has at least one tokenId
+            // if not create it, otherwise stake to min max  
         } else {
             (uint usdc, uint fold) = _valid_token(token, amount);
             IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
@@ -414,13 +403,45 @@ contract FOLDstaking is IERC721Receiver {
             }
             TransferHelper.safeApprove(token, address(nonfungiblePositionManager), amount);
         }
-        
-        // TODO use the price ticks from the medianizer to create NFT
-
-        // TODO _addLiquidity
-        
         TransferHelper.safeApprove(USDC, address(nonfungiblePositionManager), amount);
+
+        if (tokenId != 0) {
+            
+        }
     }    
+
+    function packNFT(address token, uint amount, uint _tickUpper, uint _tickLower) external {
+        // TODO use the price ticks from the medianizer to create NFT
+        
+        _valid_token(token, amount);
+        if (_tickLower > 0) {
+            require(_tickLower >= TickMath.MIN_TICK &&
+            _tickUpper <= TickMath.MAX_TICK, "bad ticks");
+        } else {
+            _tickLower = TickMath.MIN_TICK;
+            _tickUpper = TickMath.MAX_TICK;
+        }
+        uint poolFee = token == USDC ? FEE_USDC : FEE_WETH;
+
+        INonfungiblePositionManager(nonfungiblePositionManager).MintParams memory params =
+            INonfungiblePositionManager.MintParams({
+                token0: token, token1: FOLD,
+                fee: poolFee,
+                tickLower: _tickLower,
+                tickUpper: _tickUpper,
+                amount0Desired: amount0ToMint,
+                amount1Desired: amount1ToMint,
+                amount0Min: 0,
+                amount1Min: 0,
+                recipient: address(this),
+                deadline: block.timestamp
+            });
+
+     
+
+        (tokenId, liquidity, amount0, amount1) = nonfungiblePositionManager.mint(params);
+
+    }
 
     /**
      * @dev This is one way of treating deposits.
@@ -437,9 +458,10 @@ contract FOLDstaking is IERC721Receiver {
     }
 
     function _depositNFT(uint tokenId, address from) internal {
-        (address token0, address token1, uint128 liquidity) = _getPositionInfo(tokenId);
+        required(!PAUSED, "FOLDstaking: contract is paused");
+        (address token0, uint128 liquidity) = _getPositionInfo(tokenId);
 
-        require(token1 == FOLD, "FOLDstaking::deposit: improper token id");
+        
         // usually this means that the owner of the position already closed it
         require(liquidity > 0, "FOLDstaking::deposit: cannot deposit empty amount");
 
