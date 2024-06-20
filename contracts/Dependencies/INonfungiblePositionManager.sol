@@ -18,6 +18,20 @@ interface INonfungiblePositionManager is IERC721 {
         uint256 deadline;
     }
 
+    struct MintParams {
+        address token0;
+        address token1;
+        uint24 fee;
+        int24 tickLower;
+        int24 tickUpper;
+        uint256 amount0Desired;
+        uint256 amount1Desired;
+        uint256 amount0Min;
+        uint256 amount1Min;
+        address recipient;
+        uint256 deadline;
+    }
+    
     struct CollectParams {
         uint256 tokenId;
         address recipient;
@@ -25,9 +39,22 @@ interface INonfungiblePositionManager is IERC721 {
         uint128 amount1Max;
     }
 
-    function collect(
-        CollectParams calldata params
-    ) external returns (uint256 amount0, uint256 amount1);
+    /// @notice Creates a new position wrapped in a NFT
+    /// @dev Call this when the pool does exist and is initialized.
+    /// @param params The params necessary to mint a position, encoded as `MintParams` in calldata
+    /// @return tokenId The ID of the token that represents the minted position
+    /// @return liquidity The amount of liquidity for this position
+    /// @return amount0 The amount of token0
+    /// @return amount1 The amount of token1
+    function mint(MintParams calldata params)
+        external
+        payable
+        returns (
+            uint256 tokenId,
+            uint128 liquidity,
+            uint256 amount0,
+            uint256 amount1
+        );
 
     function positions(uint tokenId) external
     view returns (uint96 nonce, address operator,
@@ -41,6 +68,10 @@ interface INonfungiblePositionManager is IERC721 {
     function increaseLiquidity(
         IncreaseLiquidityParams calldata params
     ) external returns (uint128 liquidity, uint256 amount0, uint256 amount1);
+
+    function collect(
+        CollectParams calldata params
+    ) external returns (uint256 amount0, uint256 amount1);
 
     function decreaseLiquidity(
         DecreaseLiquidityParams calldata params
