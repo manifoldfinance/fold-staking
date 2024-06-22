@@ -1,3 +1,4 @@
+
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 interface INonfungiblePositionManager is IERC721 { 
     
@@ -55,6 +56,10 @@ interface INonfungiblePositionManager is IERC721 {
             uint256 amount0,
             uint256 amount1
         );
+
+    function burn(
+        uint256 tokenId
+    ) external;
 
     function positions(uint tokenId) external
     view returns (uint96 nonce, address operator,
