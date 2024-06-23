@@ -442,10 +442,9 @@ contract FOLDstaking is IERC721Receiver {
         amount = _min(amount, IERC20(token).balanceOf(msg.sender));
         uint amount1 = token == FOLD ? amount : 0;
         uint amount0 = amount1 > 0 ? 0 : amount;
-        if (weth && msg.value > 0) {        
+        if (weth && msg.value > 0) { token = WETH;       
             IWETH(WETH).deposit{value: msg.value}(); // WETH balance available to address(this)
             amount0 += msg.value;
-            TransferHelper.safeApprove(WETH, NFPM, amount0);
         }
         if (!weth) {
             require(token == USDC, "FOLDstaking::deposit: pass in a good token");
@@ -454,8 +453,10 @@ contract FOLDstaking is IERC721Receiver {
             TransferHelper.safeTransferFrom(FOLD, msg.sender, address(this), amount1);
             TransferHelper.safeApprove(FOLD, NFPM, amount1);     
         }
-        TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount0);
-        TransferHelper.safeApprove(token, NFPM, amount0);
+        if (amount0 > 0) {
+            TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount0);
+            TransferHelper.safeApprove(token, NFPM, amount0);
+        }
         if (tokenId != 0) {
             uint timestamp = depositTimestamps[beneficiary][tokenId];
             require(timestamp > 0, "FOLDstaking::deposit: tokenId doesn't exist");
