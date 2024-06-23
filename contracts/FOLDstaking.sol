@@ -438,51 +438,54 @@ contract FOLDstaking is IERC721Receiver {
     function deposit(address beneficiary, uint amount, 
     address token, uint tokenId) external payable {
         require(!PAUSED, "FOLDstaking: contract paused");
-        bool weth = token == FOLD || token == WETH;
         amount = _min(amount, IERC20(token).balanceOf(msg.sender));
-        uint amount1 = token == FOLD ? amount : 0;
-        uint amount0 = amount1 > 0 ? 0 : amount;
-        if (weth && msg.value > 0) { token = WETH;       
+        uint amount1;
+        uint amount0;
+        uint24 poolFee;
+        if (token == FOLD) { 
+            TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
+            TransferHelper.safeApprove(token, NFPM, amount);
+            amount1 = amount;
+        } else {
+            amount0 = amount;
+            if (token == USDC) {
+                poolFee = FEE_USDC;
+            } else if (token == WETH) {
+                poolFee = FEE_WETH;
+            } else {
+                revert UnsupportedToken();
+            }
+            TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
+            TransferHelper.safeApprove(token, NFPM, amount);
+        }
+        if (msg.value > 0) { require(token != USDC, "FOLDstaking::deposit: bad combo");
             IWETH(WETH).deposit{value: msg.value}(); // WETH balance available to address(this)
-            amount0 += msg.value;
-        }
-        if (!weth) {
-            require(token == USDC, "FOLDstaking::deposit: pass in a good token");
-        } 
-        if (amount1 > 0) {
-            TransferHelper.safeTransferFrom(FOLD, msg.sender, address(this), amount1);
-            TransferHelper.safeApprove(FOLD, NFPM, amount1);     
-        }
-        if (amount0 > 0) {
-            TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount0);
-            TransferHelper.safeApprove(token, NFPM, amount0);
+            amount0 += msg.value; 
+            uint allowance = IERC20(WETH).allowance(address(this), NFPM);
+            TransferHelper.safeApprove(WETH, NFPM, allowance + msg.value);
         }
         if (tokenId != 0) {
             uint timestamp = depositTimestamps[beneficiary][tokenId];
             require(timestamp > 0, "FOLDstaking::deposit: tokenId doesn't exist");
-             (,, address token0,,
+            (,, address token0,,
              ,,, uint128 liquidity,,,,) = INonfungiblePositionManager(NFPM).positions(tokenId);
             uint current_week = _roll();
             uint reward = _reward(timestamp, liquidity, 
-                                token0, current_week);
+                                  token0, current_week);
             if (token0 == WETH) {
-                require(weth, "FOLDstaking::deposit: pass in a good token");
                 liquidityWETH -= liquidity;
             } else {
                 liquidityUSDC -= liquidity;
             }
-            liquidity = _collect(token0, tokenId, 
-                address(this), amount0 + reward, amount1);
-            require(liquidity >= minLiquidity, 
-            "FOLDstaking::deposit: minLiquidity");
+            liquidity = _collect(token0, tokenId, address(this), 
+                                 amount0 + reward, amount1);
             if (token0 == WETH) {
                 liquidityWETH += liquidity;
             } else {
                 liquidityUSDC += liquidity;
             }
             depositTimestamps[msg.sender][tokenId] = block.timestamp;
-        } else { token = weth ? WETH : USDC;
-            uint24 poolFee = weth ? FEE_WETH : FEE_USDC;
+        } else { token = token == WETH || token == FOLD ? WETH : USDC;
             INonfungiblePositionManager.MintParams memory params =
             INonfungiblePositionManager.MintParams({
                 token0: token, token1: FOLD,
@@ -497,8 +500,8 @@ contract FOLDstaking is IERC721Receiver {
             });
             (uint tokenID, uint128 liquidity,,) = INonfungiblePositionManager(NFPM).mint(params);
             depositTimestamps[beneficiary][tokenID] = block.timestamp;
-            NFT memory nft; nft.id = tokenID; nft.burned = false;
-            if (weth) {
+            NFT memory nft; nft.id = tokenID; 
+            if (token == WETH) {
                 wethIDs[beneficiary].push(nft);
                 liquidityWETH += liquidity;
             } else {
