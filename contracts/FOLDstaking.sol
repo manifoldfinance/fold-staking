@@ -485,7 +485,8 @@ contract FOLDstaking is IERC721Receiver {
                 liquidityUSDC += liquidity;
             }
             depositTimestamps[msg.sender][tokenId] = block.timestamp;
-        } else { token = token == WETH || token == FOLD ? WETH : USDC;
+        } else {
+            if (token == FOLD) token = WETH;
             INonfungiblePositionManager.MintParams memory params =
             INonfungiblePositionManager.MintParams({
                 token0: token, token1: FOLD,
