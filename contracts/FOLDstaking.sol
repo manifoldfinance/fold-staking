@@ -446,6 +446,7 @@ contract FOLDstaking is IERC721Receiver {
             TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
             TransferHelper.safeApprove(token, NFPM, amount);
             amount1 = amount;
+            poolFee = FEE_WETH; // only used if no tokenId passed in
         } else {
             amount0 = amount;
             if (token == USDC) {
