@@ -15,8 +15,8 @@ import {Owned} from "lib/solmate/src/auth/Owned.sol";
 import {WETH9} from "./contracts/WETH9.sol";
 
 /// @author CopyPaste
-/// @title FoldCaptiveInsurance
-contract FoldCaptiveInsurance is Owned(msg.sender) {
+/// @title FoldCaptiveStaking
+contract FoldCaptiveStaking is Owned(msg.sender) {
     /*//////////////////////////////////////////////////////////////
                              INITIALIZATION
     //////////////////////////////////////////////////////////////*/
