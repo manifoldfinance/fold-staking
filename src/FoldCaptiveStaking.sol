@@ -93,6 +93,11 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     WETH9 public immutable WETH;
     ERC20 public immutable FOLD;
 
+    function depositRewards() payable public {
+      WETH.deposit(msg.value);
+      rewardsPerLiquidity += msg.value;
+    }
+
     /*//////////////////////////////////////////////////////////////
                                MANAGEMENT
     //////////////////////////////////////////////////////////////*/
