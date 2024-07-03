@@ -6,7 +6,6 @@ libs = ['lib']
 optimizer = true
 optimizer_runs = 10_000_000
 # @see {@link https://github.com/foundry-rs/foundry/issues/4060}
-auto_detect_remappings = false
 bytecode_hash = "none"
 cbor_metadata = false
 sparse_mode = false
