@@ -1,3 +1,4 @@
+/// SPDX-License-Identifier: SSPL-1.-0
 pragma solidity 0.8.25;
 
 /// Interfaces
@@ -21,9 +22,16 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
                              INITIALIZATION
     //////////////////////////////////////////////////////////////*/
 
+    /// @param _positionManager The Canonical UniswapV3 PositionManager
+    /// @param _pool The FOLD Pool to Reward
+    /// @param _weth The address of WETH on the deployed chain
+    /// @param _fold The address of Fold on the deployed chain
     constructor(address _positionManager, address _pool, address _weth, address _fold) {
         positionManager = INonfungiblePositionManager(_positionManager);
         POOL = IUniswapV3Pool(_pool);
+
+        token1 = ERC20(POOL.token1());
+        token0 = ERC20(POOL.token0());
 
         WETH = WETH9(payable(_weth));
         FOLD = ERC20(_fold);
@@ -31,8 +39,8 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         // We must mint the pool a small dust LP position, which also prevents share attacks
         // So this is our "minimum shares"
         INonfungiblePositionManager.MintParams memory params = INonfungiblePositionManager.MintParams({
-            token0: address(FOLD),
-            token1: address(WETH),
+            token0: address(token0),
+            token1: address(token1),
             fee: 10000,
             tickLower: TICK_LOWER,
             tickUpper: TICK_UPPER,
@@ -43,6 +51,9 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
             recipient: address(this),
             deadline: block.timestamp + 1 minutes
         });
+
+        token0.approve(address(positionManager), type(uint256).max);
+        token1.approve(address(positionManager), type(uint256).max);
 
         WETH.approve(address(positionManager), type(uint256).max);
         FOLD.approve(address(positionManager), type(uint256).max);
@@ -64,8 +75,12 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     int24 public constant TICK_LOWER = TickMath.MIN_TICK;
     /// @dev The Canonical UniswapV3 Position Manager
     INonfungiblePositionManager public immutable positionManager;
-    /// @dev The FOLD <> USDC Liquidity Pool
+    /// @dev The FOLD <> {WETH, USDC} Liquidity Pool
     IUniswapV3Pool public immutable POOL;
+    /// @dev token0 In terms of the Uniswap Pool
+    ERC20 public immutable token0;
+    /// @dev token1 in terms of the Uniswap Pool
+    ERC20 public immutable token1;
     /// @dev The tokenId of the UniswapV3 position
     uint256 public immutable TOKEN_ID;
     /// @dev Used for all rewards related tracking
@@ -90,11 +105,13 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
     mapping(address user => UserInfo info) public balances;
 
+    /// @dev The Canonical WETH address
     WETH9 public immutable WETH;
     ERC20 public immutable FOLD;
 
+    /// @notice Allows anyone to add funds to the contract, split among all depositors
     function depositRewards() payable public {
-      WETH.deposit(msg.value);
+      WETH.deposit{value: msg.value}();
       rewardsPerLiquidity += msg.value;
     }
 
@@ -102,6 +119,9 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
                                MANAGEMENT
     //////////////////////////////////////////////////////////////*/
 
+    /// @param amount0 The amount of token0 to deposit 
+    /// @param amount1 The amount of token1 to deposit
+    /// @param slippage Slippage on deposit out of 1e18
     function deposit(uint256 amount0, uint256 amount1, uint256 slippage) external {
         collectFees();
         collectRewards();
@@ -116,22 +136,54 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
             deadline: block.timestamp + 1 minutes
         });
 
-        FOLD.transferFrom(msg.sender, address(this), amount0);
-        WETH.transferFrom(msg.sender, address(this), amount1);
+        token0.transferFrom(msg.sender, address(this), amount0);
+        token1.transferFrom(msg.sender, address(this), amount1);
 
         (uint128 liquidity, uint256 actualAmount0, uint256 actualAmount1) = positionManager.increaseLiquidity(params);
 
         if (actualAmount0 < amount0) {
-            FOLD.transfer(msg.sender, amount0 - actualAmount0);
+            token0.transfer(msg.sender, amount0 - actualAmount0);
         }
         if (actualAmount1 < amount1) {
-            WETH.transfer(msg.sender, amount1 - actualAmount1);
+            token1.transfer(msg.sender, amount1 - actualAmount1);
         }
 
         balances[msg.sender].amount += liquidity;
         liquidityUnderManagement += uint256(liquidity);
     }
 
+    /// @notice Compounds User Earned Fees back into their position 
+    function compound() public {
+        collectPositionFees();
+
+        uint256 fee0Owed = (token0FeesPerLiquidity - balances[msg.sender].token0FeeDebt) * balances[msg.sender].amount
+            / liquidityUnderManagement;
+        uint256 fee1Owed = token1FeesPerLiquidity
+            - balances[msg.sender].token1FeeDebt * balances[msg.sender].amount / liquidityUnderManagement;
+
+        INonfungiblePositionManager.IncreaseLiquidityParams memory params = INonfungiblePositionManager
+            .IncreaseLiquidityParams({
+            tokenId: TOKEN_ID,
+            amount0Desired: fee0Owed,
+            amount1Desired: fee1Owed,
+            amount0Min: 0,
+            amount1Min: 0,
+            deadline: block.timestamp + 1 minutes
+        });
+
+        (uint128 liquidity, uint256 actualAmount0, uint256 actualAmount1) = positionManager.increaseLiquidity(params);
+
+        token0.transfer(msg.sender, fee0Owed - actualAmount0);
+        token1.transfer(msg.sender, fee1Owed - actualAmount1);
+
+        balances[msg.sender].token0FeeDebt = uint128(token0FeesPerLiquidity);
+        balances[msg.sender].token1FeeDebt = uint128(token1FeesPerLiquidity);
+
+        balances[msg.sender].amount += liquidity;
+        liquidityUnderManagement += uint256(liquidity);
+    }
+
+    /// @notice User-specific function to collect fees on the singular position
     function collectFees() public {
         collectPositionFees();
 
@@ -140,13 +192,14 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         uint256 fee1Owed = token1FeesPerLiquidity
             - balances[msg.sender].token1FeeDebt * balances[msg.sender].amount / liquidityUnderManagement;
 
-        FOLD.transfer(msg.sender, fee0Owed);
-        WETH.transfer(msg.sender, fee1Owed);
+        token0.transfer(msg.sender, fee0Owed);
+        token1.transfer(msg.sender, fee1Owed);
 
         balances[msg.sender].token0FeeDebt = uint128(token0FeesPerLiquidity);
         balances[msg.sender].token1FeeDebt = uint128(token1FeesPerLiquidity);
     }
 
+    /// @notice User-specific Rewards for Protocol Rewards
     function collectRewards() public {
         uint256 rewardsOwed = (rewardsPerLiquidity - balances[msg.sender].rewardDebt) * balances[msg.sender].amount
             / liquidityUnderManagement;
@@ -155,6 +208,7 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         balances[msg.sender].rewardDebt = uint128(rewardsPerLiquidity);
     }
 
+    /// @notice liquidity The Liquidity Value which the user wants to withdraw
     function withdraw(uint128 liquidity) external {
         collectFees();
         collectRewards();
@@ -173,13 +227,15 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         (uint256 amount0, uint256 amount1) = positionManager.decreaseLiquidity(params);
 
-        FOLD.transfer(msg.sender, amount0);
-        WETH.transfer(msg.sender, amount1);
+        token0.transfer(msg.sender, amount0);
+        token1.transfer(msg.sender, amount1);
     }
 
     /*//////////////////////////////////////////////////////////////
                             INTERNAL HELPERS
     //////////////////////////////////////////////////////////////*/
+
+    /// @notice Collects fees on the underling UniswapV3 Position
     function collectPositionFees() internal {
         INonfungiblePositionManager.CollectParams memory params = INonfungiblePositionManager.CollectParams({
             tokenId: TOKEN_ID,
