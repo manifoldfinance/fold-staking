@@ -198,8 +198,9 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         uint256 fee0Owed = (token0FeesPerLiquidity - balances[msg.sender].token0FeeDebt) * balances[msg.sender].amount
             / liquidityUnderManagement;
-        uint256 fee1Owed = token1FeesPerLiquidity
-            - balances[msg.sender].token1FeeDebt * balances[msg.sender].amount / liquidityUnderManagement;
+        uint256 fee1Owed = (token1FeesPerLiquidity
+            - balances[msg.sender].token1FeeDebt) * balances[msg.sender].amount / liquidityUnderManagement;
+
 
         token0.transfer(msg.sender, fee0Owed);
         token1.transfer(msg.sender, fee1Owed);
@@ -212,6 +213,7 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     function collectRewards() isInitialized public {
         uint256 rewardsOwed = (rewardsPerLiquidity - balances[msg.sender].rewardDebt) * balances[msg.sender].amount
             / liquidityUnderManagement;
+            
         WETH.transfer(msg.sender, rewardsOwed);
 
         balances[msg.sender].rewardDebt = uint128(rewardsPerLiquidity);
