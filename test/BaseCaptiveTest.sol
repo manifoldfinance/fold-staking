@@ -12,6 +12,9 @@ contract BaseCaptiveTest is Test {
   WETH9 public weth = WETH9(payable(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2));
   ERC20 public fold = ERC20(0xd084944d3c05CD115C09d072B9F44bA3E0E45921);
 
+  address public User01 = address(0x1);
+  address public User02 = address(0x2);
+
   function setUp() public {
     uint256 mainnetFork = vm.createFork("https://eth.llamarpc.com"); 
     vm.selectFork(mainnetFork);
@@ -30,6 +33,7 @@ contract BaseCaptiveTest is Test {
     foldCaptiveStaking = new FoldCaptiveStaking(address(positionManager), address(pool), address(weth), address(fold)); 
     
     fold.transfer(address(foldCaptiveStaking), 1_000_000);
+    fold.transfer(address(User01), 100 ether);
     weth.transfer(address(foldCaptiveStaking), 1_000_000);
     
     foldCaptiveStaking.initialize();
