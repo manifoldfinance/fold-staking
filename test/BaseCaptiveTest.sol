@@ -34,6 +34,7 @@ contract BaseCaptiveTest is Test {
     
     fold.transfer(address(foldCaptiveStaking), 1_000_000);
     fold.transfer(address(User01), 100 ether);
+
     weth.transfer(address(foldCaptiveStaking), 1_000_000);
     
     foldCaptiveStaking.initialize();

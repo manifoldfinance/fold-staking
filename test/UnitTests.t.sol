@@ -18,13 +18,13 @@ contract UnitTests is BaseCaptiveTest {
     fold.approve(address(foldCaptiveStaking), type(uint256).max);
 
     foldCaptiveStaking.deposit(1_000 ether, 1_000 ether, 0);
-
     (uint128 amount, uint128 rewardDebt, uint128 token0FeeDebt, uint128 token1FeeDebt) = foldCaptiveStaking.balances(User01);
 
     assertGt(amount, 0);
     assertEq(rewardDebt, 0);
     assertEq(token0FeeDebt, 0);
     assertEq(token1FeeDebt, 0);
+
   }
 
   function testRemoveLiquidity() public {
@@ -210,5 +210,9 @@ contract UnitTests is BaseCaptiveTest {
     (, rewardDebt, , ) = foldCaptiveStaking.balances(User01);
     assertEq(rewardDebt, foldCaptiveStaking.rewardsPerLiquidity());
     assertGt(weth.balanceOf(User01), initialBalance);
+
+    (uint128 liq, , ,) = foldCaptiveStaking.balances(User01);
+    foldCaptiveStaking.withdraw(liq / 2);
+
   }
 }
