@@ -213,6 +213,84 @@ contract UnitTests is BaseCaptiveTest {
 
     (uint128 liq, , ,) = foldCaptiveStaking.balances(User01);
     foldCaptiveStaking.withdraw(liq / 2);
+  }
 
+  function testComplexScenario() public {
+    fold.transfer(User01, 1_000 ether);
+    fold.transfer(User02, 100 ether);
+    vm.deal(User01, 1_000 ether);
+    vm.deal(User02, 100 ether);
+
+    /// 1. Two Users Deposit into the Contract
+
+    vm.startPrank(User01);
+    weth.deposit{value: 1_000 ether}();
+    weth.approve(address(foldCaptiveStaking), type(uint256).max);
+    fold.approve(address(foldCaptiveStaking), type(uint256).max);
+    foldCaptiveStaking.deposit(1_000 ether, 1_000 ether, 0);
+    vm.stopPrank();
+
+    vm.startPrank(User02);
+    weth.deposit{value: 100 ether}();
+    weth.approve(address(foldCaptiveStaking), type(uint256).max);
+    fold.approve(address(foldCaptiveStaking), type(uint256).max);
+    foldCaptiveStaking.deposit(100 ether, 100 ether, 0);
+    vm.stopPrank();
+
+    /// 2. People Swap in the Pool Accruing Fees
+    vm.deal(User01, 10 ether);
+    vm.startPrank(User01);
+    weth.deposit{value: 10 ether}();
+    weth.approve(address(router), type(uint256).max);
+
+    ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+        tokenIn: address(weth),
+        tokenOut: address(fold),
+        fee: 10_000,
+        recipient: msg.sender,
+        deadline: block.timestamp,
+        amountIn: 10 ether,
+        amountOutMinimum: 0,
+        sqrtPriceLimitX96: 0
+    });
+
+    // The call to `exactInputSingle` executes the swap.
+    uint256 amountOut = router.exactInputSingle(params);
+    assertGt(amountOut, 0);
+
+    fold.approve(address(router), type(uint256).max);
+
+    params = ISwapRouter.ExactInputSingleParams({
+        tokenIn: address(fold),
+        tokenOut: address(weth),
+        fee: 10_000,
+        recipient: msg.sender,
+        deadline: block.timestamp,
+        amountIn: 10 ether,
+        amountOutMinimum: 0,
+        sqrtPriceLimitX96: 0
+    });
+
+    // The call to `exactInputSingle` executes the swap.
+    amountOut = router.exactInputSingle(params);
+    vm.stopPrank();
+
+    /// 3. The Auction grants the Reward Contract with some Ether
+    vm.deal(vm.addr(3), 10 ether);
+    vm.prank(vm.addr(3));
+    foldCaptiveStaking.depositRewards{value: 10 ether}();
+
+    /// 4. Users collect fees + Rewards, one compounds
+    vm.prank(User01);
+    foldCaptiveStaking.collectFees();
+
+    vm.prank(User02);
+    foldCaptiveStaking.compound();
+
+    vm.prank(User01);
+    foldCaptiveStaking.collectRewards();
+    
+    vm.prank(User02);
+    foldCaptiveStaking.collectRewards();
   }
 }
