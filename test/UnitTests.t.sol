@@ -279,7 +279,7 @@ contract UnitTests is BaseCaptiveTest {
     vm.deal(vm.addr(3), 10 ether);
     vm.prank(vm.addr(3));
     foldCaptiveStaking.depositRewards{value: 10 ether}();
-
+    
     /// 4. Users collect fees + Rewards, one compounds
     vm.prank(User01);
     foldCaptiveStaking.collectFees();

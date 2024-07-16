@@ -167,8 +167,10 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         uint256 fee0Owed = (token0FeesPerLiquidity - balances[msg.sender].token0FeeDebt) * balances[msg.sender].amount
             / liquidityUnderManagement;
-        uint256 fee1Owed = token1FeesPerLiquidity
-            - balances[msg.sender].token1FeeDebt * balances[msg.sender].amount / liquidityUnderManagement;
+        uint256 fee1Owed = (token1FeesPerLiquidity
+            - balances[msg.sender].token1FeeDebt) * balances[msg.sender].amount / liquidityUnderManagement;
+
+        require(fee0Owed != 0 && fee1Owed != 0, "ZERO COMPOUND");
 
         INonfungiblePositionManager.IncreaseLiquidityParams memory params = INonfungiblePositionManager
             .IncreaseLiquidityParams({
