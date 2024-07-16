@@ -172,22 +172,22 @@ contract UnitTests is BaseCaptiveTest {
         FoldCaptiveStaking stakingTwo =
             new FoldCaptiveStaking(address(positionManager), address(pool), address(weth), address(fold));
 
-        vm.expectRevert("NO INIT");
+        vm.expectRevert(NotInitialized.selector);
         stakingTwo.deposit(0, 0, 0);
 
-        vm.expectRevert("NO INIT");
+        vm.expectRevert(NotInitialized.selector);
         stakingTwo.withdraw(0);
 
-        vm.expectRevert("NO INIT");
+        vm.expectRevert(NotInitialized.selector);
         stakingTwo.collectFees();
 
-        vm.expectRevert("NO INIT");
+        vm.expectRevert(NotInitialized.selector);
         stakingTwo.collectRewards();
 
-        vm.expectRevert("NO INIT");
+        vm.expectRevert(NotInitialized.selector);
         stakingTwo.compound();
 
-        vm.expectRevert("NO INIT");
+        vm.expectRevert(NotInitialized.selector);
         stakingTwo.depositRewards();
     }
 

@@ -5,6 +5,13 @@ import "src/FoldCaptiveStaking.sol";
 import {Test} from "forge-std/Test.sol";
 
 contract BaseCaptiveTest is Test {
+    /// Custom Errors
+    error ZeroAddress();
+    error AlreadyInitialized();
+    error NotInitialized();
+    error ZeroLiquidity();
+    error WithdrawFailed();
+
     FoldCaptiveStaking public foldCaptiveStaking;
 
     INonfungiblePositionManager public positionManager =

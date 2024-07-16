@@ -17,12 +17,14 @@ import {WETH9} from "./contracts/WETH9.sol";
 
 /// @author CopyPaste
 /// @title FoldCaptiveStaking
+/// @notice Staking contract for managing FOLD token liquidity on Uniswap V3
 contract FoldCaptiveStaking is Owned(msg.sender) {
     /*//////////////////////////////////////////////////////////////
                              INITIALIZATION
     //////////////////////////////////////////////////////////////*/
     bool public initialized;
 
+    // Events
     event Initialized();
     event Deposit(address indexed user, uint256 amount0, uint256 amount1);
     event Withdraw(address indexed user, uint128 liquidity);
@@ -31,15 +33,21 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     event RewardsCollected(address indexed user, uint256 rewardsOwed);
     event Compounded(address indexed user, uint128 liquidity, uint256 fee0Owed, uint256 fee1Owed);
 
+    /// Custom Errors
+    error ZeroAddress();
+    error AlreadyInitialized();
+    error NotInitialized();
+    error ZeroLiquidity();
+    error WithdrawFailed();
+
     /// @param _positionManager The Canonical UniswapV3 PositionManager
     /// @param _pool The FOLD Pool to Reward
     /// @param _weth The address of WETH on the deployed chain
     /// @param _fold The address of Fold on the deployed chain
     constructor(address _positionManager, address _pool, address _weth, address _fold) {
-        require(
-            _positionManager != address(0) && _pool != address(0) && _weth != address(0) && _fold != address(0),
-            "Zero address"
-        );
+        if (_positionManager == address(0) || _pool == address(0) || _weth == address(0) || _fold == address(0)) {
+            revert ZeroAddress();
+        }
 
         positionManager = INonfungiblePositionManager(_positionManager);
         POOL = IUniswapV3Pool(_pool);
@@ -53,8 +61,10 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         initialized = false;
     }
 
-    function initialize() public {
-        require(!initialized, "Already initialized");
+    function initialize() public onlyOwner {
+        if (initialized) {
+            revert AlreadyInitialized();
+        }
 
         // We must mint the pool a small dust LP position, which also prevents share attacks
         // So this is our "minimum shares"
@@ -77,7 +87,9 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         uint128 liquidity;
         (TOKEN_ID, liquidity,,) = positionManager.mint(params);
-        require(liquidity > 0, "ZERO Liquidity");
+        if (liquidity == 0) {
+            revert ZeroLiquidity();
+        }
 
         liquidityUnderManagement += uint256(liquidity);
 
@@ -86,7 +98,9 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     }
 
     modifier isInitialized() {
-        require(initialized, "NO INIT");
+        if (!initialized) {
+            revert NotInitialized();
+        }
         _;
     }
 
@@ -141,10 +155,15 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         emit RewardsDeposited(msg.value);
     }
 
+    receive() external payable {
+        depositRewards();
+    }
+
     /*//////////////////////////////////////////////////////////////
                                MANAGEMENT
     //////////////////////////////////////////////////////////////*/
 
+    /// @notice Allows a user to deposit liquidity into the pool
     /// @param amount0 The amount of token0 to deposit
     /// @param amount1 The amount of token1 to deposit
     /// @param slippage Slippage on deposit out of 1e18
@@ -244,6 +263,7 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     }
 
     /// @notice liquidity The Liquidity Value which the user wants to withdraw
+    /// @param liquidity The amount of liquidity to withdraw
     function withdraw(uint128 liquidity) external isInitialized {
         collectFees();
         collectRewards();
@@ -271,7 +291,9 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         (uint256 amount0Collected, uint256 amount1Collected) = positionManager.collect(collectParams);
 
-        require(amount0Collected == amount0 && amount1Collected == amount1, "WITHDRAW: FAIL");
+        if (amount0Collected != amount0 || amount1Collected != amount1) {
+            revert WithdrawFailed();
+        }
 
         token0.transfer(msg.sender, amount0);
         token1.transfer(msg.sender, amount1);
