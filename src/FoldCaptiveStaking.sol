@@ -1,4 +1,4 @@
-/// SPDX-License-Identifier: SSPL-1.-0
+/// SPDX-License-Identifier: SSPL-1.0
 pragma solidity 0.8.25;
 
 /// Interfaces
@@ -23,11 +23,24 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     //////////////////////////////////////////////////////////////*/
     bool public initialized;
 
+    event Initialized();
+    event Deposit(address indexed user, uint256 amount0, uint256 amount1);
+    event Withdraw(address indexed user, uint128 liquidity);
+    event RewardsDeposited(uint256 amount);
+    event FeesCollected(address indexed user, uint256 fee0Owed, uint256 fee1Owed);
+    event RewardsCollected(address indexed user, uint256 rewardsOwed);
+    event Compounded(address indexed user, uint128 liquidity, uint256 fee0Owed, uint256 fee1Owed);
+
     /// @param _positionManager The Canonical UniswapV3 PositionManager
     /// @param _pool The FOLD Pool to Reward
     /// @param _weth The address of WETH on the deployed chain
     /// @param _fold The address of Fold on the deployed chain
     constructor(address _positionManager, address _pool, address _weth, address _fold) {
+        require(
+            _positionManager != address(0) && _pool != address(0) && _weth != address(0) && _fold != address(0),
+            "Zero address"
+        );
+
         positionManager = INonfungiblePositionManager(_positionManager);
         POOL = IUniswapV3Pool(_pool);
 
@@ -41,6 +54,8 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     }
 
     function initialize() public {
+        require(!initialized, "Already initialized");
+
         // We must mint the pool a small dust LP position, which also prevents share attacks
         // So this is our "minimum shares"
         INonfungiblePositionManager.MintParams memory params = INonfungiblePositionManager.MintParams({
@@ -65,13 +80,14 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         require(liquidity > 0, "ZERO Liquidity");
 
         liquidityUnderManagement += uint256(liquidity);
-        
+
         initialized = true;
+        emit Initialized();
     }
 
-    modifier isInitialized {
-      require(initialized, "NO INIT");
-      _;
+    modifier isInitialized() {
+        require(initialized, "NO INIT");
+        _;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -119,19 +135,20 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     ERC20 public immutable FOLD;
 
     /// @notice Allows anyone to add funds to the contract, split among all depositors
-    function depositRewards() isInitialized payable public {
-      WETH.deposit{value: msg.value}();
-      rewardsPerLiquidity += msg.value;
+    function depositRewards() public payable isInitialized {
+        WETH.deposit{value: msg.value}();
+        rewardsPerLiquidity += msg.value;
+        emit RewardsDeposited(msg.value);
     }
 
     /*//////////////////////////////////////////////////////////////
                                MANAGEMENT
     //////////////////////////////////////////////////////////////*/
 
-    /// @param amount0 The amount of token0 to deposit 
+    /// @param amount0 The amount of token0 to deposit
     /// @param amount1 The amount of token1 to deposit
     /// @param slippage Slippage on deposit out of 1e18
-    function deposit(uint256 amount0, uint256 amount1, uint256 slippage) isInitialized external {
+    function deposit(uint256 amount0, uint256 amount1, uint256 slippage) external isInitialized {
         collectFees();
         collectRewards();
 
@@ -159,16 +176,18 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         balances[msg.sender].amount += liquidity;
         liquidityUnderManagement += uint256(liquidity);
+
+        emit Deposit(msg.sender, amount0, amount1);
     }
 
-    /// @notice Compounds User Earned Fees back into their position 
-    function compound() isInitialized public {
+    /// @notice Compounds User Earned Fees back into their position
+    function compound() public isInitialized {
         collectPositionFees();
 
         uint256 fee0Owed = (token0FeesPerLiquidity - balances[msg.sender].token0FeeDebt) * balances[msg.sender].amount
             / liquidityUnderManagement;
-        uint256 fee1Owed = token1FeesPerLiquidity
-            - balances[msg.sender].token1FeeDebt * balances[msg.sender].amount / liquidityUnderManagement;
+        uint256 fee1Owed = (token1FeesPerLiquidity - balances[msg.sender].token1FeeDebt) * balances[msg.sender].amount
+            / liquidityUnderManagement;
 
         INonfungiblePositionManager.IncreaseLiquidityParams memory params = INonfungiblePositionManager
             .IncreaseLiquidityParams({
@@ -190,37 +209,42 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         balances[msg.sender].amount += liquidity;
         liquidityUnderManagement += uint256(liquidity);
+
+        emit Compounded(msg.sender, liquidity, fee0Owed, fee1Owed);
     }
 
     /// @notice User-specific function to collect fees on the singular position
-    function collectFees() isInitialized public {
+    function collectFees() public isInitialized {
         collectPositionFees();
 
         uint256 fee0Owed = (token0FeesPerLiquidity - balances[msg.sender].token0FeeDebt) * balances[msg.sender].amount
             / liquidityUnderManagement;
-        uint256 fee1Owed = (token1FeesPerLiquidity
-            - balances[msg.sender].token1FeeDebt) * balances[msg.sender].amount / liquidityUnderManagement;
-
+        uint256 fee1Owed = (token1FeesPerLiquidity - balances[msg.sender].token1FeeDebt) * balances[msg.sender].amount
+            / liquidityUnderManagement;
 
         token0.transfer(msg.sender, fee0Owed);
         token1.transfer(msg.sender, fee1Owed);
 
         balances[msg.sender].token0FeeDebt = uint128(token0FeesPerLiquidity);
         balances[msg.sender].token1FeeDebt = uint128(token1FeesPerLiquidity);
+
+        emit FeesCollected(msg.sender, fee0Owed, fee1Owed);
     }
 
     /// @notice User-specific Rewards for Protocol Rewards
-    function collectRewards() isInitialized public {
+    function collectRewards() public isInitialized {
         uint256 rewardsOwed = (rewardsPerLiquidity - balances[msg.sender].rewardDebt) * balances[msg.sender].amount
             / liquidityUnderManagement;
-            
+
         WETH.transfer(msg.sender, rewardsOwed);
 
         balances[msg.sender].rewardDebt = uint128(rewardsPerLiquidity);
+
+        emit RewardsCollected(msg.sender, rewardsOwed);
     }
 
     /// @notice liquidity The Liquidity Value which the user wants to withdraw
-    function withdraw(uint128 liquidity) isInitialized external {
+    function withdraw(uint128 liquidity) external isInitialized {
         collectFees();
         collectRewards();
 
@@ -251,6 +275,8 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         token0.transfer(msg.sender, amount0);
         token1.transfer(msg.sender, amount1);
+
+        emit Withdraw(msg.sender, liquidity);
     }
 
     /*//////////////////////////////////////////////////////////////
