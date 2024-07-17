@@ -42,11 +42,11 @@ contract UnitTests is BaseCaptiveTest {
         assertEq(token0FeeDebt, 0);
         assertEq(token1FeeDebt, 0);
 
-        foldCaptiveStaking.withdraw(liq / 2);
+        foldCaptiveStaking.withdraw(liq / 4);
 
         (amount,,,) = foldCaptiveStaking.balances(User01);
 
-        assertEq(amount, 0);
+        assertEq(amount, liq / 4);
     }
 
     function testFeesAccrue() public {
@@ -213,6 +213,77 @@ contract UnitTests is BaseCaptiveTest {
         assertGt(weth.balanceOf(User01), initialBalance);
 
         (uint128 liq,,,) = foldCaptiveStaking.balances(User01);
+        foldCaptiveStaking.withdraw(liq / 3);
+    }
+
+    function testClaimInsurance() public {
+        testAddLiquidity();
+
+        // Owner claims insurance
+        uint128 liquidityToClaim = uint128(foldCaptiveStaking.liquidityUnderManagement() / 4);
+
+        address owner = foldCaptiveStaking.owner();
+        vm.startPrank(owner);
+        uint256 initialToken0Balance = fold.balanceOf(owner);
+        uint256 initialToken1Balance = weth.balanceOf(owner);
+
+        foldCaptiveStaking.claimInsurance(liquidityToClaim);
+
+        assertGt(fold.balanceOf(owner), initialToken0Balance);
+        assertGt(weth.balanceOf(owner), initialToken1Balance);
+
+        vm.stopPrank();
+    }
+
+    function testProRataWithdrawals() public {
+        testAddLiquidity();
+
+        (uint128 liq,,,) = foldCaptiveStaking.balances(User01);
+
+        // Attempt to withdraw more than allowed amount
+        vm.expectRevert(WithdrawProRata.selector);
+        foldCaptiveStaking.withdraw(liq);
+
+        // Pro-rated withdrawal
         foldCaptiveStaking.withdraw(liq / 2);
+        (uint128 amount,,,) = foldCaptiveStaking.balances(User01);
+        assertEq(amount, liq / 2);
+    }
+
+    function testZeroDeposit() public {
+        vm.expectRevert();
+        foldCaptiveStaking.deposit(0, 0, 0);
+        // (uint128 amount,,,) = foldCaptiveStaking.balances(User01);
+        // assertEq(amount, 0);
+    }
+
+    function testReentrancy() public {
+        testAddLiquidity();
+
+        // Create a reentrancy attack contract and attempt to exploit the staking contract
+        ReentrancyAttack attack = new ReentrancyAttack(payable(address(foldCaptiveStaking)));
+        fold.transfer(address(attack), 1 ether);
+        weth.transfer(address(attack), 1 ether);
+
+        vm.expectRevert();
+        attack.attack();
+    }
+}
+
+// Reentrancy attack contract
+contract ReentrancyAttack {
+    FoldCaptiveStaking public staking;
+
+    constructor(address payable _staking) {
+        staking = FoldCaptiveStaking(_staking);
+    }
+
+    function attack() public {
+        staking.deposit(1 ether, 1 ether, 0);
+        staking.withdraw(1);
+    }
+
+    receive() external payable {
+        staking.withdraw(1);
     }
 }

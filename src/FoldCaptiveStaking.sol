@@ -13,7 +13,7 @@ import {TickMath} from "./libraries/TickMath.sol";
 /// contracts
 import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
 import {Owned} from "lib/solmate/src/auth/Owned.sol";
-import {WETH9} from "./contracts/WETH9.sol";
+import {WETH} from "lib/solmate/src/tokens/WETH.sol";
 
 /// @author CopyPaste
 /// @title FoldCaptiveStaking
@@ -32,6 +32,7 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     event FeesCollected(address indexed user, uint256 fee0Owed, uint256 fee1Owed);
     event RewardsCollected(address indexed user, uint256 rewardsOwed);
     event Compounded(address indexed user, uint128 liquidity, uint256 fee0Owed, uint256 fee1Owed);
+    event InsuranceClaimed(address indexed owner, uint256 amount0, uint256 amount1);
 
     /// Custom Errors
     error ZeroAddress();
@@ -39,6 +40,7 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     error NotInitialized();
     error ZeroLiquidity();
     error WithdrawFailed();
+    error WithdrawProRata();
 
     /// @param _positionManager The Canonical UniswapV3 PositionManager
     /// @param _pool The FOLD Pool to Reward
@@ -55,12 +57,13 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         token0 = ERC20(POOL.token0());
         token1 = ERC20(POOL.token1());
 
-        WETH = WETH9(payable(_weth));
+        WETH9 = WETH(payable(_weth));
         FOLD = ERC20(_fold);
 
         initialized = false;
     }
 
+    /// @notice Initialize the contract by minting a small initial liquidity position
     function initialize() public onlyOwner {
         if (initialized) {
             revert AlreadyInitialized();
@@ -145,12 +148,12 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     mapping(address user => UserInfo info) public balances;
 
     /// @dev The Canonical WETH address
-    WETH9 public immutable WETH;
+    WETH public immutable WETH9;
     ERC20 public immutable FOLD;
 
     /// @notice Allows anyone to add funds to the contract, split among all depositors
     function depositRewards() public payable isInitialized {
-        WETH.deposit{value: msg.value}();
+        WETH9.deposit{value: msg.value}();
         rewardsPerLiquidity += msg.value;
         emit RewardsDeposited(msg.value);
     }
@@ -255,18 +258,22 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         uint256 rewardsOwed = (rewardsPerLiquidity - balances[msg.sender].rewardDebt) * balances[msg.sender].amount
             / liquidityUnderManagement;
 
-        WETH.transfer(msg.sender, rewardsOwed);
+        WETH9.transfer(msg.sender, rewardsOwed);
 
         balances[msg.sender].rewardDebt = uint128(rewardsPerLiquidity);
 
         emit RewardsCollected(msg.sender, rewardsOwed);
     }
 
-    /// @notice liquidity The Liquidity Value which the user wants to withdraw
+    /// @notice Withdraws liquidity from the pool
     /// @param liquidity The amount of liquidity to withdraw
     function withdraw(uint128 liquidity) external isInitialized {
         collectFees();
         collectRewards();
+
+        if (liquidity > balances[msg.sender].amount / 2) {
+            revert WithdrawProRata();
+        }
 
         balances[msg.sender].amount -= liquidity;
         liquidityUnderManagement -= uint256(liquidity);
@@ -318,5 +325,47 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         token0FeesPerLiquidity += amount0Collected;
         token1FeesPerLiquidity += amount1Collected;
+    }
+
+    /// @notice Allows the owner to claim insurance in case of relay outage
+    /// @param liquidity The amount of liquidity to claim
+    function claimInsurance(uint128 liquidity) external onlyOwner {
+        collectPositionFees();
+        collectRewards();
+
+        if (liquidity > liquidityUnderManagement / 2) {
+            revert WithdrawProRata();
+        }
+
+        liquidityUnderManagement -= uint256(liquidity);
+
+        INonfungiblePositionManager.DecreaseLiquidityParams memory decreaseParams = INonfungiblePositionManager
+            .DecreaseLiquidityParams({
+            tokenId: TOKEN_ID,
+            liquidity: liquidity,
+            amount0Min: 0,
+            amount1Min: 0,
+            deadline: block.timestamp + 1 minutes
+        });
+
+        (uint256 amount0, uint256 amount1) = positionManager.decreaseLiquidity(decreaseParams);
+
+        INonfungiblePositionManager.CollectParams memory collectParams = INonfungiblePositionManager.CollectParams({
+            tokenId: TOKEN_ID,
+            recipient: address(this),
+            amount0Max: uint128(amount0),
+            amount1Max: uint128(amount1)
+        });
+
+        (uint256 amount0Collected, uint256 amount1Collected) = positionManager.collect(collectParams);
+
+        if (amount0Collected != amount0 || amount1Collected != amount1) {
+            revert WithdrawFailed();
+        }
+
+        token0.transfer(owner, amount0);
+        token1.transfer(owner, amount1);
+
+        emit InsuranceClaimed(owner, amount0, amount1);
     }
 }

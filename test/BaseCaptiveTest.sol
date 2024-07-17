@@ -11,13 +11,14 @@ contract BaseCaptiveTest is Test {
     error NotInitialized();
     error ZeroLiquidity();
     error WithdrawFailed();
+    error WithdrawProRata();
 
     FoldCaptiveStaking public foldCaptiveStaking;
 
     INonfungiblePositionManager public positionManager =
         INonfungiblePositionManager(0xC36442b4a4522E871399CD717aBDD847Ab11FE88);
     IUniswapV3Pool public pool = IUniswapV3Pool(0x5eCEf3b72Cb00DBD8396EBAEC66E0f87E9596e97);
-    WETH9 public weth = WETH9(payable(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2));
+    WETH public weth = WETH(payable(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2));
     ERC20 public fold = ERC20(0xd084944d3c05CD115C09d072B9F44bA3E0E45921);
 
     address public User01 = address(0x1);
