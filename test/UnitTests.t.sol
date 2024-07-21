@@ -253,8 +253,8 @@ contract UnitTests is BaseCaptiveTest {
     function testZeroDeposit() public {
         vm.expectRevert();
         foldCaptiveStaking.deposit(0, 0, 0);
-        // (uint128 amount,,,) = foldCaptiveStaking.balances(User01);
-        // assertEq(amount, 0);
+        (uint128 amount,,,) = foldCaptiveStaking.balances(User01);
+        assertEq(amount, 0);
     }
 
     function testReentrancy() public {
