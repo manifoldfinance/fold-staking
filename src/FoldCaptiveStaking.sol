@@ -41,6 +41,7 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     error ZeroLiquidity();
     error WithdrawFailed();
     error WithdrawProRata();
+    error DepositCapReached();
 
     /// @param _positionManager The Canonical UniswapV3 PositionManager
     /// @param _pool The FOLD Pool to Reward
@@ -134,6 +135,9 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     /// @dev For keeping track of positions fees
     uint256 public token1FeesPerLiquidity;
 
+    /// @dev The cap on deposits in the pool in liquidity, set to 0 if no cap
+    uint256 public depositCap;
+
     /*//////////////////////////////////////////////////////////////
                                   CHEF
     //////////////////////////////////////////////////////////////*/
@@ -198,6 +202,10 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         balances[msg.sender].amount += liquidity;
         liquidityUnderManagement += uint256(liquidity);
+
+        if (liquidityUnderManagement > depositCap && depositCap != 0) {
+            revert DepositCapReached();
+        }
 
         emit Deposit(msg.sender, amount0, amount1);
     }
@@ -325,6 +333,14 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         token0FeesPerLiquidity += amount0Collected;
         token1FeesPerLiquidity += amount1Collected;
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                             OWNER CONTROLS
+    //////////////////////////////////////////////////////////////*/
+    /// @param _newCap The new deposit cap, measured in liquidity
+    function setDepositCap(uint256 _newCap) public onlyOwner {
+        depositCap = _newCap;
     }
 
     /// @notice Allows the owner to claim insurance in case of relay outage
