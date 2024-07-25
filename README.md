@@ -50,16 +50,7 @@ Due to the underlying nature of the risk, typical insurance/re-insurance carrier
 ## Underwriting Stakers
 
 Depositing into the `FoldCaptiveStaking` contract enables you to underwrite the risk of missing out on blocks due to service outages of the Manifold Finance Relay. This provides a financial safety net for validators connected to the Manifold Finance Relay.
-
-Automated Compounding of Accrued Fees: The contract automates the compounding of deposits' accrued fees. This incentivizes a maximum number of compounds at optimal times with regards to gas costs, enhancing the efficiency of capital utilization.
-
-Rewards for Staking: In addition to swap fees from liquidity provision on Uniswap V3, LPs (Liquidity Providers) are rewarded for staking their FOLD tokens in the contract. This serves as an additional incentive for liquidity providers to stake their tokens.
-
-Protocol Overview:
-Validators connected to the Manifold relay can only connect to this relay for the XGA Auction. If the relay experiences an outage, Manifold covers the cost of lost opportunities for validators.
-
-Risk Underwriting
-Stakers in the FOLDstaking.sol contract underwrite the risk of missing out on blocks, functioning as a form of captive insurance. The contract tracks the duration of each deposit and rewards depositors individually.
+The Relay provides Validators connected to it unique MEV opportuinities via the XGA Auction. *[Read more about the Auction at docs.xga.com](https://docs.xga.com)*. If the relay experiences an outage, Manifold Finance covers the cost of lost opportunities for validators that participate.
 
 <!-- TOC --><a name="staking-mechanism"></a>
 ### Staking Mechanism
