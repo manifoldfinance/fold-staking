@@ -1,46 +1,210 @@
-# Fold Captive Staking ![Foundry](https://github.com/manifoldfinance/fold-staking/actions/workflows/test.yml/badge.svg?branch=master)
+# [`FOLD` Staking Protocol v02](#)
 
-## Introduction
+<!-- TOC start -->
 
-All the validators that are connected to the Manifold relay can ONLY connect to the Manifold relay (for mevAuction). If there's a service outage (of the relay), Manifold needs to be able to cover the cost (of lost opportunity) for validators.
+- [Captive Insurance](#captive-insurance)
+      + [Funding ](#funding)
+      + [Coverage](#coverage)
+   * [Underwriting Stakers](#underwriting-stakers)
+      + [Staking Mechanism](#staking-mechanism)
+         - [Primary Incentives](#primary-incentives)
+         - [Secondary Incentives:](#secondary-incentives)
+         - [Deposit Structure](#deposit-structure)
+         - [Withdrawal Process:](#withdrawal-process)
+      + [Reward Calculation](#reward-calculation)
+      + [Depositor Autonomy](#depositor-autonomy)
+      + [Fee Handling](#fee-handling)
+      + [Comparison with Bunni](#comparison-with-bunni)
+   * [High level overview](#high-level-overview)
+   * [Claims Process](#claims-process)
 
-Stakers into the `FOLDstaking.sol` contract are underwriting this risk ([captive insurance](https://forums.manifoldfinance.com/t/captive-insurance-and-fold-staking/562)) of missing out on blocks. The contract keeps track of the durations of each deposit. Rewards are paid individually to each depositor.
+<!-- TOC end -->
 
-Staking FOLD tokens transfers LP deposit ownership to the `FOLDstaking` contract. The contract's owners (msig) require the ability to permanently claim FOLD balances in the interest of captive insurance claims through the `claimInsurance` function.
+<!-- TOC --><a name="captive-insurance"></a>
+## Captive Insurance
 
-In exchange, LPs are rewarded for staking (in addition to swap fees), and the compounding of their deposits' accrued fees is automated. This serves to incentivize a maximum number of compounds at optimal times with regards to gas costs.
+Captive insurance is a form of self-insurance where an entity creates a *wholly-owned subsidiary* to provide insurance for itself. This subsidiary, known as a "**captive insurer**," _underwrites the risk of its parent company_. Captive insurance allows the parent company to retain premiums and control the risk management process.
 
-Multiple deposits may be made of several V3 positions. The duration of each deposit as well as its share of the total liquidity deposited in the vault (for that pair) determines how much the reward will be (it's paid from the WETH balance of the contract).
+Due to the underlying nature of the risk, typical insurance/re-insurance carriers will not provide coverage for this type of risk.
 
-There is no necessity for a Keeper to continuously compound rewards; however, withdrawals, after initiation, are pro-rated over 14 days if they are above a certain percentage of the total liquidity in the pool (borrowing from the queue design of mevETH with some small adjustment to fit).
+> [!IMPORTANT]
+> Please read the https://forums.manifoldfinance.com/t/captive-insurance-and-fold-staking/562 forum post for more information regarding the motivations behind this mechanism.
 
-## Materials and Methods
+<!-- TOC --><a name="funding"></a>
+### Funding 
+* The parent entity provides capital to the captive insurer.
+* The captive insurer collects premiums from the parent entity.
 
-To become accustomed with the relevant contextual terrain for an undertaking of our scope, we've surveyed some existing work on the subject of "address[ing] the issue of attracting stable liquidity".
+<!-- TOC --><a name="coverage"></a>
+### Coverage
+* The captive insurer provides coverage for the parent entity's risks.
+* Claims are processed and paid by the captive insurer.
 
-Case in point: https://docs.pangolin.exchange/faqs/understanding-sar
+> [!NOTE]
+> [Disclaimer: No Financial Advice](https://github.com/manifoldfinance/legal/blob/master/active/disclaimer/DISCLAIMER_NO_FINANCIAL_ADVICE.txt) and [Content is presented for eductional purposes only.](https://github.com/manifoldfinance/legal/blob/master/active/disclaimer/CONTENT_DISCLAIMER.txt)
 
-The formula therein for calculating rewards has a useful property:
+> [!CAUTION]
+> Disclaimer: This is not a regulated insurance product. This is a self-insurance mechanism that is designed to provide coverage for the risks associated with the Manifold Finance Relay and XGA Auction Platform.
+
+<!-- TOC --><a name="underwriting-stakers"></a>
+## Underwriting Stakers
+
+Depositing into the `FoldCaptiveStaking` contract enables you to underwrite the risk of missing out on blocks due to service outages of the Manifold Finance Relay. This provides a financial safety net for validators connected to the Manifold Finance Relay.
+
+Automated Compounding of Accrued Fees: The contract automates the compounding of deposits' accrued fees. This incentivizes a maximum number of compounds at optimal times with regards to gas costs, enhancing the efficiency of capital utilization.
+
+Rewards for Staking: In addition to swap fees from liquidity provision on Uniswap V3, LPs (Liquidity Providers) are rewarded for staking their FOLD tokens in the contract. This serves as an additional incentive for liquidity providers to stake their tokens.
+
+Protocol Overview:
+Validators connected to the Manifold relay can only connect to this relay for the XGA Auction. If the relay experiences an outage, Manifold covers the cost of lost opportunities for validators.
+
+Risk Underwriting
+Stakers in the FOLDstaking.sol contract underwrite the risk of missing out on blocks, functioning as a form of captive insurance. The contract tracks the duration of each deposit and rewards depositors individually.
+
+<!-- TOC --><a name="staking-mechanism"></a>
+### Staking Mechanism
+Staking `$FOLD` tokens transfers LP deposit ownership to the *FOLDstaking* contract. The contract owners can claim `$FOLD` balances permanently for insurance claims through the `claimInsurance` function.
+
+> [!IMPORTANT]
+> Fees earned are retained into a indemnity fund that first pays out. In the event that the losses exceed the assets in the fund, it is only then that a claim can be made against the Vault.
+
+<!-- TOC --><a name="primary-incentives"></a>
+#### Primary Incentives
+By underwriting the service risk of the Manifold Finance Relay and XGA Auction Platform, stakers earn yield in `$ETH`. `$FOLD` is *not* the reward token paid to stakers.
+
+<!-- TOC --><a name="secondary-incentives"></a>
+#### Secondary Incentives:
+LPs receive rewards for staking, which includes swap fees and automated compounding of accrued fees. This incentivizes optimal compounding times concerning gas costs. 
+
+<!-- TOC --><a name="deposit-structure"></a>
+#### Deposit Structure
+Multiple V3 positions can be deposited. The reward amount is determined by the duration and share of the total liquidity deposited in the vault, paid from the contract's WETH balance.
+
+<!-- TOC --><a name="withdrawal-process"></a>
+#### Withdrawal Process:
+Withdrawals, after initiation, are pro-rated over 14 days if they exceed a certain percentage of the pool's total liquidity.
+
+
+<!-- TOC --><a name="reward-calculation"></a>
+### Reward Calculation
+
+Rewards are calculated without considering the entire stake duration, instead looping through each week. Claiming rewards or removing liquidity resets the deposit's timestamp, reducing total rewards. 
+
+The reward calculation formula is as follows:
+
+```
 (position stake / total staked) x (stake duration / average stake duration)
+```
 
-The useful property is in the second half of the expression. Division prevents an overflow from occurring (in the worst-case scenario) because, otherwise, duration would keep increasing (potentially indefinitely), and eventually cause an overflow in the result of the expression.
 
-When it comes to calculating rewards, specifically, we don't take into account the stake's entire duration, looping through each week on a need-to-count basis (we divide and conquer the problem of aggregating rewards). Claiming rewards or removing liquidity resets the deposit's timestamp to the current week (reducing its total rewards).
+> [!NOTE] 
+> The Average stake duration is factored in, following the "sunshine & rainbow" design doc from *Pangolin Exchange's SAR Mechanism*.[see docs.pangolin.exchange/faqs/understanding-sar](https://docs.pangolin.exchange/faqs/understanding-sar)
 
-For a separate matter, we do factor in the average stake duration. The following property is inherited from the so-called "sunshine & rainbow" design doc: "you can only have 1 position per wallet; you can always add on top of your current position, but you can’t split your position into multiple pieces."
+<!-- TOC --><a name="depositor-autonomy"></a>
+### Depositor Autonomy
+Depositors can choose the price range (ticks) for their UNIv3 NFT by creating it externally and calling the deposit function with DepositParams. A vote affects deposits of stakers with no personal preference, using a time-weighted median for the price range.
 
-Contrarily, Bunni, a lit protocol (*L*iquidity *I*ncentive *T*oken), wraps UNIv3 NFTs into a fungible token balance. Each balance is tightly coupled to the price range (ticks) for said NFT. As such, Bunni is its own sort of aggregator using multiple fungible token balances for one depositor.
+<!-- TOC --><a name="fee-handling"></a>
+### Fee Handling
+Uniswap automatically handles fee collection and redepositing, enhancing LP earnings. Bunni's compound function increases the value of share tokens, while FOLDstaking.sol rewards are based on deposit duration and total size across all price ranges.
 
-## Analysis
+<!-- TOC --><a name="comparison-with-bunni"></a>
+### Comparison with Bunni
+Bunni pays rewards pro rata to the contribution per price range, while FOLDstaking.sol pays rewards based on deposit duration and total size relative to the pool's total liquidity across all price ranges. 
 
-On an individual basis, depositors may wish to decide the price range (ticks) *for their own* UNIv3 NFT. They can do this with `FOLDstaking.sol` by creating the NFT in advance (on an external platform), then calling our `deposit` function, which takes `DepositParams`.
+> We thank [@ZeframLou](https://github.com/ZeframLou) for his tireless work on improving mechanism design in the industry.
 
-Choosing price ranges for the individual deposit automatically applies a vote to affect the deposits of stakers who show no personal preference for their own NFT. This is because *we don't force* (though we do *encourage*) our depositors to accept the responsibility of this choice.
+<!-- TOC --><a name="high-level-overview"></a>
+## High level overview
 
-Instead, by calling our third `deposit` function (with the least number of parameters) they may accept the time-weighted median for the price range (which factors in the individual decisions of depositors for each pool, respectively).
+```mermaid
+sequenceDiagram
+    participant User
+    participant Contract as FoldCaptiveStaking Contract
+    participant Uniswap as Uniswap V3
 
-It is not necessary for LPs to manually claim fees collected by a V3 pool and redeposit them to increase the liquidity of a deposit. Uniswap is designed to handle this automatically, ensuring that fees are continuously working to enhance the earning potential of LPs.
+    Note over User,Uniswap: Process for Managing FOLD Token Liquidity
 
-Bunni has a `compound` function to increase the value of share tokens (ERC20 balances that each correspond to a key, which is a pool and a price range to go with it). `FOLDstaking.sol` approaches rewards differently so there is no requirement for this.
+    User->>Contract: Deposit FOLD Tokens
 
-The difference also relates to how Bunni pays rewards pro rata to depositors' contribution per price range (relative to the total liquidity for that price range). `FOLDstaking.sol` pays rewards solely based on the duration of the deposit and the total size of the deposit (across all price ranges) relative to the total liquidity in the pool (again, across all price ranges).
+    activate Contract
+    Contract->>Uniswap: Provide Liquidity
+    Uniswap-->>Contract: Swap Fees + Rewards
+    deactivate Contract
+
+    loop Automated Compounding
+        Contract->>Contract: Compound Accrued Fees
+    end
+
+    User->>Contract: Request Withdrawal
+    activate Contract
+    Note over Contract: 14 Day Period
+    Contract-->>User: Return FOLD Tokens + Rewards
+    deactivate Contract
+```
+
+
+<!-- TOC --><a name="claims-process"></a>
+## Claims Process
+
+> [!WARNING]
+> Track the GitHub issue at https://github.com/manifoldfinance/fold-staking/issues/9
+
+Currently, `claimInsurance` does not have the logic necessary to 'validate' a claim. This is because the management of captive insurance claims is handled by us, which is why it is called Captive Insurance.
+
+Until the L2 Construct is implemented for v2 supporting multiple relays, this is fine. However, we should outline and document how exactly a claim is substantiated. Typically, the insured party must provide notice to their insurance carrier for potential claims. Therefore, it is up to the underlying LST/Validator/Node Operator to initiate this process, it is not up to us to initialize the process for paying out a claim.
+
+```mermaid
+sequenceDiagram
+    participant User as LP (Liquidity Provider)
+    participant Contract as FoldCaptiveStaking Contract
+    participant Insurance as Insurance Claim Function
+
+    User->>Contract: Stake FOLD Tokens
+    Note over User,Contract: Tokens are staked for liquidity and rewards
+
+    Contract->>Contract: Automate Compounding
+    Note over Contract: Accrued fees are compounded
+
+    User->>Insurance: Initiate Claim
+    Note over Insurance: Due to service outage or other covered event
+
+    Insurance->>Contract: Verify Claim
+    Note over Contract: Check if claim is valid based on contract rules
+
+    Contract->>User: Calculate Claim Amount
+    Note over User: Based on staked amount and contract terms
+
+    Contract->>User: Pay Claim from Deposits
+    Note over User: WETH balance or equivalent is used
+
+    User->>Contract: Close Claim
+    Note over Contract,User: Claim is marked as resolved
+```
+
+## License
+
+<!-- START OF DISCLAIMER -->
+Copyright © 2021-2024 Manifold Finance, Inc.
+
+All Rights Reserved - email: contact@manifoldfinance.com
+
+This software or document includes material from Manifold Finance.
+
+    THIS DOCUMENT IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS MAKE NO
+    REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED
+    TO, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+    NON-INFRINGEMENT, OR TITLE; THAT THE CONTENTS OF THE DOCUMENT ARE SUITABLE FOR
+    ANY PURPOSE; NOR THAT THE IMPLEMENTATION OF SUCH CONTENTS WILL NOT INFRINGE
+    ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS.
+
+    COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR
+    CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE DOCUMENT OR THE
+    PERFORMANCE OR IMPLEMENTATION OF THE CONTENTS THEREOF.
+
+The name and trademarks of copyright holders may NOT be used in advertising or
+publicity pertaining to this document or its contents without specific,
+written prior permission. Title to copyright in this document will at all
+times remain with copyright holders.
+
+<!-- END OF DISCLAIMER -->
