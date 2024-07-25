@@ -1,0 +1,435 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>FoldCaptiveStaking</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../book.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item "><a href="../../index.html">Home</a></li><li class="chapter-item affix "><li class="part-title">src</li><li class="chapter-item "><a href="../../src/interfaces/index.html">❱ interfaces</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/interfaces/pool/index.html">❱ pool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/interfaces/pool/IUniswapV3PoolActions.sol/interface.IUniswapV3PoolActions.html">IUniswapV3PoolActions</a></li><li class="chapter-item "><a href="../../src/interfaces/pool/IUniswapV3PoolDerivedState.sol/interface.IUniswapV3PoolDerivedState.html">IUniswapV3PoolDerivedState</a></li><li class="chapter-item "><a href="../../src/interfaces/pool/IUniswapV3PoolEvents.sol/interface.IUniswapV3PoolEvents.html">IUniswapV3PoolEvents</a></li><li class="chapter-item "><a href="../../src/interfaces/pool/IUniswapV3PoolImmutables.sol/interface.IUniswapV3PoolImmutables.html">IUniswapV3PoolImmutables</a></li><li class="chapter-item "><a href="../../src/interfaces/pool/IUniswapV3PoolOwnerActions.sol/interface.IUniswapV3PoolOwnerActions.html">IUniswapV3PoolOwnerActions</a></li><li class="chapter-item "><a href="../../src/interfaces/pool/IUniswapV3PoolState.sol/interface.IUniswapV3PoolState.html">IUniswapV3PoolState</a></li></ol></li><li class="chapter-item "><a href="../../src/interfaces/INonfungiblePositionManager.sol/interface.INonfungiblePositionManager.html">INonfungiblePositionManager</a></li><li class="chapter-item "><a href="../../src/interfaces/IUniswapV3Factory.sol/interface.IUniswapV3Factory.html">IUniswapV3Factory</a></li><li class="chapter-item "><a href="../../src/interfaces/IUniswapV3MintCallback.sol/interface.IUniswapV3MintCallback.html">IUniswapV3MintCallback</a></li><li class="chapter-item "><a href="../../src/interfaces/IUniswapV3Pool.sol/interface.IUniswapV3Pool.html">IUniswapV3Pool</a></li></ol></li><li class="chapter-item "><a href="../../src/libraries/index.html">❱ libraries</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/libraries/TickMath.sol/library.TickMath.html">TickMath</a></li></ol></li><li class="chapter-item expanded "><a href="../../src/FoldCaptiveStaking.sol/contract.FoldCaptiveStaking.html" class="active">FoldCaptiveStaking</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/manifoldfinance/fold-staking" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="foldcaptivestaking"><a class="header" href="#foldcaptivestaking">FoldCaptiveStaking</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/FoldCaptiveStaking.sol">Git Source</a></p>
+<p><strong>Inherits:</strong>
+Owned</p>
+<p><strong>Author:</strong>
+CopyPaste</p>
+<p>SPDX-License-Identifier: SSPL-1.0
+Interfaces
+Libraries
+contracts</p>
+<p>Staking contract for managing FOLD token liquidity on Uniswap V3</p>
+<h2 id="state-variables"><a class="header" href="#state-variables">State Variables</a></h2>
+<h3 id="initialized"><a class="header" href="#initialized">initialized</a></h3>
+<pre><code class="language-solidity">bool public initialized;
+</code></pre>
+<h3 id="tick_upper"><a class="header" href="#tick_upper">TICK_UPPER</a></h3>
+<p><em>The max Tick of the position</em></p>
+<pre><code class="language-solidity">int24 public constant TICK_UPPER = TickMath.MAX_TICK;
+</code></pre>
+<h3 id="tick_lower"><a class="header" href="#tick_lower">TICK_LOWER</a></h3>
+<p><em>The lower Tick of the position</em></p>
+<pre><code class="language-solidity">int24 public constant TICK_LOWER = TickMath.MIN_TICK;
+</code></pre>
+<h3 id="positionmanager"><a class="header" href="#positionmanager">positionManager</a></h3>
+<p><em>The Canonical UniswapV3 Position Manager</em></p>
+<pre><code class="language-solidity">INonfungiblePositionManager public immutable positionManager;
+</code></pre>
+<h3 id="pool"><a class="header" href="#pool">POOL</a></h3>
+<p><em>The FOLD &lt;&gt; {WETH, USDC} Liquidity Pool</em></p>
+<pre><code class="language-solidity">IUniswapV3Pool public immutable POOL;
+</code></pre>
+<h3 id="token0"><a class="header" href="#token0">token0</a></h3>
+<p><em>token0 In terms of the Uniswap Pool</em></p>
+<pre><code class="language-solidity">ERC20 public immutable token0;
+</code></pre>
+<h3 id="token1"><a class="header" href="#token1">token1</a></h3>
+<p><em>token1 in terms of the Uniswap Pool</em></p>
+<pre><code class="language-solidity">ERC20 public immutable token1;
+</code></pre>
+<h3 id="token_id"><a class="header" href="#token_id">TOKEN_ID</a></h3>
+<p><em>The tokenId of the UniswapV3 position</em></p>
+<pre><code class="language-solidity">uint256 public TOKEN_ID;
+</code></pre>
+<h3 id="liquidityundermanagement"><a class="header" href="#liquidityundermanagement">liquidityUnderManagement</a></h3>
+<p><em>Used for all rewards related tracking</em></p>
+<pre><code class="language-solidity">uint256 public liquidityUnderManagement;
+</code></pre>
+<h3 id="rewardsperliquidity"><a class="header" href="#rewardsperliquidity">rewardsPerLiquidity</a></h3>
+<p><em>Used to keep track of rewards given per share</em></p>
+<pre><code class="language-solidity">uint256 public rewardsPerLiquidity;
+</code></pre>
+<h3 id="token0feesperliquidity"><a class="header" href="#token0feesperliquidity">token0FeesPerLiquidity</a></h3>
+<p><em>For keeping track of position fees</em></p>
+<pre><code class="language-solidity">uint256 public token0FeesPerLiquidity;
+</code></pre>
+<h3 id="token1feesperliquidity"><a class="header" href="#token1feesperliquidity">token1FeesPerLiquidity</a></h3>
+<p><em>For keeping track of positions fees</em></p>
+<pre><code class="language-solidity">uint256 public token1FeesPerLiquidity;
+</code></pre>
+<h3 id="depositcap"><a class="header" href="#depositcap">depositCap</a></h3>
+<p><em>The cap on deposits in the pool in liquidity, set to 0 if no cap</em></p>
+<pre><code class="language-solidity">uint256 public depositCap;
+</code></pre>
+<h3 id="balances"><a class="header" href="#balances">balances</a></h3>
+<pre><code class="language-solidity">mapping(address user =&gt; UserInfo info) public balances;
+</code></pre>
+<h3 id="weth9"><a class="header" href="#weth9">WETH9</a></h3>
+<p><em>The Canonical WETH address</em></p>
+<pre><code class="language-solidity">WETH public immutable WETH9;
+</code></pre>
+<h3 id="fold"><a class="header" href="#fold">FOLD</a></h3>
+<pre><code class="language-solidity">ERC20 public immutable FOLD;
+</code></pre>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<pre><code class="language-solidity">constructor(address _positionManager, address _pool, address _weth, address _fold);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>_positionManager</code></td><td><code>address</code></td><td>The Canonical UniswapV3 PositionManager</td></tr>
+<tr><td><code>_pool</code></td><td><code>address</code></td><td>The FOLD Pool to Reward</td></tr>
+<tr><td><code>_weth</code></td><td><code>address</code></td><td>The address of WETH on the deployed chain</td></tr>
+<tr><td><code>_fold</code></td><td><code>address</code></td><td>The address of Fold on the deployed chain</td></tr>
+</tbody></table>
+</div>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<p>Initialize the contract by minting a small initial liquidity position</p>
+<pre><code class="language-solidity">function initialize() public onlyOwner;
+</code></pre>
+<h3 id="isinitialized"><a class="header" href="#isinitialized">isInitialized</a></h3>
+<pre><code class="language-solidity">modifier isInitialized();
+</code></pre>
+<h3 id="depositrewards"><a class="header" href="#depositrewards">depositRewards</a></h3>
+<p>Allows anyone to add funds to the contract, split among all depositors</p>
+<pre><code class="language-solidity">function depositRewards() public payable isInitialized;
+</code></pre>
+<h3 id="receive"><a class="header" href="#receive">receive</a></h3>
+<pre><code class="language-solidity">receive() external payable;
+</code></pre>
+<h3 id="deposit"><a class="header" href="#deposit">deposit</a></h3>
+<p>Allows a user to deposit liquidity into the pool</p>
+<pre><code class="language-solidity">function deposit(uint256 amount0, uint256 amount1, uint256 slippage) external isInitialized;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 to deposit</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 to deposit</td></tr>
+<tr><td><code>slippage</code></td><td><code>uint256</code></td><td>Slippage on deposit out of 1e18</td></tr>
+</tbody></table>
+</div>
+<h3 id="compound"><a class="header" href="#compound">compound</a></h3>
+<p>Compounds User Earned Fees back into their position</p>
+<pre><code class="language-solidity">function compound() public isInitialized;
+</code></pre>
+<h3 id="collectfees"><a class="header" href="#collectfees">collectFees</a></h3>
+<p>User-specific function to collect fees on the singular position</p>
+<pre><code class="language-solidity">function collectFees() public isInitialized;
+</code></pre>
+<h3 id="collectrewards"><a class="header" href="#collectrewards">collectRewards</a></h3>
+<p>User-specific Rewards for Protocol Rewards</p>
+<pre><code class="language-solidity">function collectRewards() public isInitialized;
+</code></pre>
+<h3 id="withdraw"><a class="header" href="#withdraw">withdraw</a></h3>
+<p>Withdraws liquidity from the pool</p>
+<pre><code class="language-solidity">function withdraw(uint128 liquidity) external isInitialized;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The amount of liquidity to withdraw</td></tr>
+</tbody></table>
+</div>
+<h3 id="collectpositionfees"><a class="header" href="#collectpositionfees">collectPositionFees</a></h3>
+<p>Collects fees on the underling UniswapV3 Position</p>
+<pre><code class="language-solidity">function collectPositionFees() internal;
+</code></pre>
+<h3 id="setdepositcap"><a class="header" href="#setdepositcap">setDepositCap</a></h3>
+<pre><code class="language-solidity">function setDepositCap(uint256 _newCap) public onlyOwner;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>_newCap</code></td><td><code>uint256</code></td><td>The new deposit cap, measured in liquidity</td></tr>
+</tbody></table>
+</div>
+<h3 id="claiminsurance"><a class="header" href="#claiminsurance">claimInsurance</a></h3>
+<p>Allows the owner to claim insurance in case of relay outage</p>
+<pre><code class="language-solidity">function claimInsurance(uint128 liquidity) external onlyOwner;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The amount of liquidity to claim</td></tr>
+</tbody></table>
+</div>
+<h2 id="events"><a class="header" href="#events">Events</a></h2>
+<h3 id="initialized-1"><a class="header" href="#initialized-1">Initialized</a></h3>
+<pre><code class="language-solidity">event Initialized();
+</code></pre>
+<h3 id="deposit-1"><a class="header" href="#deposit-1">Deposit</a></h3>
+<pre><code class="language-solidity">event Deposit(address indexed user, uint256 amount0, uint256 amount1);
+</code></pre>
+<h3 id="withdraw-1"><a class="header" href="#withdraw-1">Withdraw</a></h3>
+<pre><code class="language-solidity">event Withdraw(address indexed user, uint128 liquidity);
+</code></pre>
+<h3 id="rewardsdeposited"><a class="header" href="#rewardsdeposited">RewardsDeposited</a></h3>
+<pre><code class="language-solidity">event RewardsDeposited(uint256 amount);
+</code></pre>
+<h3 id="feescollected"><a class="header" href="#feescollected">FeesCollected</a></h3>
+<pre><code class="language-solidity">event FeesCollected(address indexed user, uint256 fee0Owed, uint256 fee1Owed);
+</code></pre>
+<h3 id="rewardscollected"><a class="header" href="#rewardscollected">RewardsCollected</a></h3>
+<pre><code class="language-solidity">event RewardsCollected(address indexed user, uint256 rewardsOwed);
+</code></pre>
+<h3 id="compounded"><a class="header" href="#compounded">Compounded</a></h3>
+<pre><code class="language-solidity">event Compounded(address indexed user, uint128 liquidity, uint256 fee0Owed, uint256 fee1Owed);
+</code></pre>
+<h3 id="insuranceclaimed"><a class="header" href="#insuranceclaimed">InsuranceClaimed</a></h3>
+<pre><code class="language-solidity">event InsuranceClaimed(address indexed owner, uint256 amount0, uint256 amount1);
+</code></pre>
+<h2 id="errors"><a class="header" href="#errors">Errors</a></h2>
+<h3 id="zeroaddress"><a class="header" href="#zeroaddress">ZeroAddress</a></h3>
+<p>Custom Errors</p>
+<pre><code class="language-solidity">error ZeroAddress();
+</code></pre>
+<h3 id="alreadyinitialized"><a class="header" href="#alreadyinitialized">AlreadyInitialized</a></h3>
+<pre><code class="language-solidity">error AlreadyInitialized();
+</code></pre>
+<h3 id="notinitialized"><a class="header" href="#notinitialized">NotInitialized</a></h3>
+<pre><code class="language-solidity">error NotInitialized();
+</code></pre>
+<h3 id="zeroliquidity"><a class="header" href="#zeroliquidity">ZeroLiquidity</a></h3>
+<pre><code class="language-solidity">error ZeroLiquidity();
+</code></pre>
+<h3 id="withdrawfailed"><a class="header" href="#withdrawfailed">WithdrawFailed</a></h3>
+<pre><code class="language-solidity">error WithdrawFailed();
+</code></pre>
+<h3 id="withdrawprorata"><a class="header" href="#withdrawprorata">WithdrawProRata</a></h3>
+<pre><code class="language-solidity">error WithdrawProRata();
+</code></pre>
+<h3 id="depositcapreached"><a class="header" href="#depositcapreached">DepositCapReached</a></h3>
+<pre><code class="language-solidity">error DepositCapReached();
+</code></pre>
+<h2 id="structs"><a class="header" href="#structs">Structs</a></h2>
+<h3 id="userinfo"><a class="header" href="#userinfo">UserInfo</a></h3>
+<pre><code class="language-solidity">struct UserInfo {
+    uint128 amount;
+    uint128 rewardDebt;
+    uint128 token0FeeDebt;
+    uint128 token1FeeDebt;
+}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../src/libraries/TickMath.sol/library.TickMath.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../src/libraries/TickMath.sol/library.TickMath.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../solidity.min.js"></script>
+
+
+    </div>
+    </body>
+</html>

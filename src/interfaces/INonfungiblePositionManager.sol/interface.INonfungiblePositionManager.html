@@ -1,0 +1,445 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>INonfungiblePositionManager</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../book.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item "><a href="../../../index.html">Home</a></li><li class="chapter-item affix "><li class="part-title">src</li><li class="chapter-item expanded "><a href="../../../src/interfaces/index.html">❱ interfaces</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../src/interfaces/pool/index.html">❱ pool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../src/interfaces/pool/IUniswapV3PoolActions.sol/interface.IUniswapV3PoolActions.html">IUniswapV3PoolActions</a></li><li class="chapter-item "><a href="../../../src/interfaces/pool/IUniswapV3PoolDerivedState.sol/interface.IUniswapV3PoolDerivedState.html">IUniswapV3PoolDerivedState</a></li><li class="chapter-item "><a href="../../../src/interfaces/pool/IUniswapV3PoolEvents.sol/interface.IUniswapV3PoolEvents.html">IUniswapV3PoolEvents</a></li><li class="chapter-item "><a href="../../../src/interfaces/pool/IUniswapV3PoolImmutables.sol/interface.IUniswapV3PoolImmutables.html">IUniswapV3PoolImmutables</a></li><li class="chapter-item "><a href="../../../src/interfaces/pool/IUniswapV3PoolOwnerActions.sol/interface.IUniswapV3PoolOwnerActions.html">IUniswapV3PoolOwnerActions</a></li><li class="chapter-item "><a href="../../../src/interfaces/pool/IUniswapV3PoolState.sol/interface.IUniswapV3PoolState.html">IUniswapV3PoolState</a></li></ol></li><li class="chapter-item expanded "><a href="../../../src/interfaces/INonfungiblePositionManager.sol/interface.INonfungiblePositionManager.html" class="active">INonfungiblePositionManager</a></li><li class="chapter-item "><a href="../../../src/interfaces/IUniswapV3Factory.sol/interface.IUniswapV3Factory.html">IUniswapV3Factory</a></li><li class="chapter-item "><a href="../../../src/interfaces/IUniswapV3MintCallback.sol/interface.IUniswapV3MintCallback.html">IUniswapV3MintCallback</a></li><li class="chapter-item "><a href="../../../src/interfaces/IUniswapV3Pool.sol/interface.IUniswapV3Pool.html">IUniswapV3Pool</a></li></ol></li><li class="chapter-item "><a href="../../../src/libraries/index.html">❱ libraries</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../../src/libraries/TickMath.sol/library.TickMath.html">TickMath</a></li></ol></li><li class="chapter-item "><a href="../../../src/FoldCaptiveStaking.sol/contract.FoldCaptiveStaking.html">FoldCaptiveStaking</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/manifoldfinance/fold-staking" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="inonfungiblepositionmanager"><a class="header" href="#inonfungiblepositionmanager">INonfungiblePositionManager</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/interfaces/INonfungiblePositionManager.sol">Git Source</a></p>
+<p>Wraps Uniswap V3 positions in a non-fungible token interface which allows for them to be transferred
+and authorized.</p>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<h3 id="positions"><a class="header" href="#positions">positions</a></h3>
+<p>Returns the position information associated with a given token ID.</p>
+<p><em>Throws if the token ID is not valid.</em></p>
+<pre><code class="language-solidity">function positions(uint256 tokenId)
+    external
+    view
+    returns (
+        uint96 nonce,
+        address operator,
+        address token0,
+        address token1,
+        uint24 fee,
+        int24 tickLower,
+        int24 tickUpper,
+        uint128 liquidity,
+        uint256 feeGrowthInside0LastX128,
+        uint256 feeGrowthInside1LastX128,
+        uint128 tokensOwed0,
+        uint128 tokensOwed1
+    );
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token that represents the position</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>nonce</code></td><td><code>uint96</code></td><td>The nonce for permits</td></tr>
+<tr><td><code>operator</code></td><td><code>address</code></td><td>The address that is approved for spending</td></tr>
+<tr><td><code>token0</code></td><td><code>address</code></td><td>The address of the token0 for a specific pool</td></tr>
+<tr><td><code>token1</code></td><td><code>address</code></td><td>The address of the token1 for a specific pool</td></tr>
+<tr><td><code>fee</code></td><td><code>uint24</code></td><td>The fee associated with the pool</td></tr>
+<tr><td><code>tickLower</code></td><td><code>int24</code></td><td>The lower end of the tick range for the position</td></tr>
+<tr><td><code>tickUpper</code></td><td><code>int24</code></td><td>The higher end of the tick range for the position</td></tr>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The liquidity of the position</td></tr>
+<tr><td><code>feeGrowthInside0LastX128</code></td><td><code>uint256</code></td><td>The fee growth of token0 as of the last action on the individual position</td></tr>
+<tr><td><code>feeGrowthInside1LastX128</code></td><td><code>uint256</code></td><td>The fee growth of token1 as of the last action on the individual position</td></tr>
+<tr><td><code>tokensOwed0</code></td><td><code>uint128</code></td><td>The uncollected amount of token0 owed to the position as of the last computation</td></tr>
+<tr><td><code>tokensOwed1</code></td><td><code>uint128</code></td><td>The uncollected amount of token1 owed to the position as of the last computation</td></tr>
+</tbody></table>
+</div>
+<h3 id="mint"><a class="header" href="#mint">mint</a></h3>
+<p>Creates a new position wrapped in a NFT</p>
+<p><em>Call this when the pool does exist and is initialized. Note that if the pool is created but not initialized
+a method does not exist, i.e. the pool is assumed to be initialized.</em></p>
+<pre><code class="language-solidity">function mint(MintParams calldata params)
+    external
+    payable
+    returns (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>MintParams</code></td><td>The params necessary to mint a position, encoded as <code>MintParams</code> in calldata</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token that represents the minted position</td></tr>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The amount of liquidity for this position</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1</td></tr>
+</tbody></table>
+</div>
+<h3 id="increaseliquidity"><a class="header" href="#increaseliquidity">increaseLiquidity</a></h3>
+<p>Increases the amount of liquidity in a position, with tokens paid by the <code>msg.sender</code></p>
+<pre><code class="language-solidity">function increaseLiquidity(IncreaseLiquidityParams calldata params)
+    external
+    payable
+    returns (uint128 liquidity, uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>IncreaseLiquidityParams</code></td><td>tokenId The ID of the token for which liquidity is being increased, amount0Desired The desired amount of token0 to be spent, amount1Desired The desired amount of token1 to be spent, amount0Min The minimum amount of token0 to spend, which serves as a slippage check, amount1Min The minimum amount of token1 to spend, which serves as a slippage check, deadline The time by which the transaction must be included to effect the change</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The new liquidity amount as a result of the increase</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 to acheive resulting liquidity</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 to acheive resulting liquidity</td></tr>
+</tbody></table>
+</div>
+<h3 id="decreaseliquidity"><a class="header" href="#decreaseliquidity">decreaseLiquidity</a></h3>
+<p>Decreases the amount of liquidity in a position and accounts it to the position</p>
+<pre><code class="language-solidity">function decreaseLiquidity(DecreaseLiquidityParams calldata params)
+    external
+    payable
+    returns (uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>DecreaseLiquidityParams</code></td><td>tokenId The ID of the token for which liquidity is being decreased, amount The amount by which liquidity will be decreased, amount0Min The minimum amount of token0 that should be accounted for the burned liquidity, amount1Min The minimum amount of token1 that should be accounted for the burned liquidity, deadline The time by which the transaction must be included to effect the change</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 accounted to the position's tokens owed</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 accounted to the position's tokens owed</td></tr>
+</tbody></table>
+</div>
+<h3 id="collect"><a class="header" href="#collect">collect</a></h3>
+<p>Collects up to a maximum amount of fees owed to a specific position to the recipient</p>
+<pre><code class="language-solidity">function collect(CollectParams calldata params) external payable returns (uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>CollectParams</code></td><td>tokenId The ID of the NFT for which tokens are being collected, recipient The account that should receive the tokens, amount0Max The maximum amount of token0 to collect, amount1Max The maximum amount of token1 to collect</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of fees collected in token0</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of fees collected in token1</td></tr>
+</tbody></table>
+</div>
+<h3 id="burn"><a class="header" href="#burn">burn</a></h3>
+<p>Burns a token ID, which deletes it from the NFT contract. The token must have 0 liquidity and all tokens
+must be collected first.</p>
+<pre><code class="language-solidity">function burn(uint256 tokenId) external payable;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token that is being burned</td></tr>
+</tbody></table>
+</div>
+<h2 id="events"><a class="header" href="#events">Events</a></h2>
+<h3 id="increaseliquidity-1"><a class="header" href="#increaseliquidity-1">IncreaseLiquidity</a></h3>
+<p>Emitted when liquidity is increased for a position NFT</p>
+<p><em>Also emitted when a token is minted</em></p>
+<pre><code class="language-solidity">event IncreaseLiquidity(uint256 indexed tokenId, uint128 liquidity, uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token for which liquidity was increased</td></tr>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The amount by which liquidity for the NFT position was increased</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 that was paid for the increase in liquidity</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 that was paid for the increase in liquidity</td></tr>
+</tbody></table>
+</div>
+<h3 id="decreaseliquidity-1"><a class="header" href="#decreaseliquidity-1">DecreaseLiquidity</a></h3>
+<p>Emitted when liquidity is decreased for a position NFT</p>
+<pre><code class="language-solidity">event DecreaseLiquidity(uint256 indexed tokenId, uint128 liquidity, uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token for which liquidity was decreased</td></tr>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The amount by which liquidity for the NFT position was decreased</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 that was accounted for the decrease in liquidity</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 that was accounted for the decrease in liquidity</td></tr>
+</tbody></table>
+</div>
+<h3 id="collect-1"><a class="header" href="#collect-1">Collect</a></h3>
+<p>Emitted when tokens are collected for a position NFT</p>
+<p><em>The amounts reported may not be exactly equivalent to the amounts transferred, due to rounding behavior</em></p>
+<pre><code class="language-solidity">event Collect(uint256 indexed tokenId, address recipient, uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token for which underlying tokens were collected</td></tr>
+<tr><td><code>recipient</code></td><td><code>address</code></td><td>The address of the account that received the collected tokens</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 owed to the position that was collected</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 owed to the position that was collected</td></tr>
+</tbody></table>
+</div>
+<h2 id="structs"><a class="header" href="#structs">Structs</a></h2>
+<h3 id="mintparams"><a class="header" href="#mintparams">MintParams</a></h3>
+<pre><code class="language-solidity">struct MintParams {
+    address token0;
+    address token1;
+    uint24 fee;
+    int24 tickLower;
+    int24 tickUpper;
+    uint256 amount0Desired;
+    uint256 amount1Desired;
+    uint256 amount0Min;
+    uint256 amount1Min;
+    address recipient;
+    uint256 deadline;
+}
+</code></pre>
+<h3 id="increaseliquidityparams"><a class="header" href="#increaseliquidityparams">IncreaseLiquidityParams</a></h3>
+<pre><code class="language-solidity">struct IncreaseLiquidityParams {
+    uint256 tokenId;
+    uint256 amount0Desired;
+    uint256 amount1Desired;
+    uint256 amount0Min;
+    uint256 amount1Min;
+    uint256 deadline;
+}
+</code></pre>
+<h3 id="decreaseliquidityparams"><a class="header" href="#decreaseliquidityparams">DecreaseLiquidityParams</a></h3>
+<pre><code class="language-solidity">struct DecreaseLiquidityParams {
+    uint256 tokenId;
+    uint128 liquidity;
+    uint256 amount0Min;
+    uint256 amount1Min;
+    uint256 deadline;
+}
+</code></pre>
+<h3 id="collectparams"><a class="header" href="#collectparams">CollectParams</a></h3>
+<pre><code class="language-solidity">struct CollectParams {
+    uint256 tokenId;
+    address recipient;
+    uint128 amount0Max;
+    uint128 amount1Max;
+}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../src/interfaces/pool/IUniswapV3PoolState.sol/interface.IUniswapV3PoolState.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../src/interfaces/IUniswapV3Factory.sol/interface.IUniswapV3Factory.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../src/interfaces/pool/IUniswapV3PoolState.sol/interface.IUniswapV3PoolState.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../src/interfaces/IUniswapV3Factory.sol/interface.IUniswapV3Factory.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../solidity.min.js"></script>
+
+
+    </div>
+    </body>
+</html>

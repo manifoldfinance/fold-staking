@@ -1,0 +1,1461 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title></title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="book.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item "><a href="index.html">Home</a></li><li class="chapter-item affix "><li class="part-title">src</li><li class="chapter-item "><a href="src/interfaces/index.html">❱ interfaces</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="src/interfaces/pool/index.html">❱ pool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="src/interfaces/pool/IUniswapV3PoolActions.sol/interface.IUniswapV3PoolActions.html">IUniswapV3PoolActions</a></li><li class="chapter-item "><a href="src/interfaces/pool/IUniswapV3PoolDerivedState.sol/interface.IUniswapV3PoolDerivedState.html">IUniswapV3PoolDerivedState</a></li><li class="chapter-item "><a href="src/interfaces/pool/IUniswapV3PoolEvents.sol/interface.IUniswapV3PoolEvents.html">IUniswapV3PoolEvents</a></li><li class="chapter-item "><a href="src/interfaces/pool/IUniswapV3PoolImmutables.sol/interface.IUniswapV3PoolImmutables.html">IUniswapV3PoolImmutables</a></li><li class="chapter-item "><a href="src/interfaces/pool/IUniswapV3PoolOwnerActions.sol/interface.IUniswapV3PoolOwnerActions.html">IUniswapV3PoolOwnerActions</a></li><li class="chapter-item "><a href="src/interfaces/pool/IUniswapV3PoolState.sol/interface.IUniswapV3PoolState.html">IUniswapV3PoolState</a></li></ol></li><li class="chapter-item "><a href="src/interfaces/INonfungiblePositionManager.sol/interface.INonfungiblePositionManager.html">INonfungiblePositionManager</a></li><li class="chapter-item "><a href="src/interfaces/IUniswapV3Factory.sol/interface.IUniswapV3Factory.html">IUniswapV3Factory</a></li><li class="chapter-item "><a href="src/interfaces/IUniswapV3MintCallback.sol/interface.IUniswapV3MintCallback.html">IUniswapV3MintCallback</a></li><li class="chapter-item "><a href="src/interfaces/IUniswapV3Pool.sol/interface.IUniswapV3Pool.html">IUniswapV3Pool</a></li></ol></li><li class="chapter-item "><a href="src/libraries/index.html">❱ libraries</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="src/libraries/TickMath.sol/library.TickMath.html">TickMath</a></li></ol></li><li class="chapter-item "><a href="src/FoldCaptiveStaking.sol/contract.FoldCaptiveStaking.html">FoldCaptiveStaking</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/manifoldfinance/fold-staking" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="fold-captive-staking"><a class="header" href="#fold-captive-staking">Fold Captive Staking <img src="https://github.com/manifoldfinance/fold-staking/actions/workflows/test.yml/badge.svg?branch=master" alt="Foundry" /></a></h1>
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
+<p>All the validators that are connected to the Manifold relay can ONLY connect to the Manifold relay (for mevAuction). If there's a service outage (of the relay), Manifold needs to be able to cover the cost (of lost opportunity) for validators.</p>
+<p>Stakers into the <code>FOLDstaking.sol</code> contract are underwriting this risk (<a href="https://forums.manifoldfinance.com/t/captive-insurance-and-fold-staking/562">captive insurance</a>) of missing out on blocks. The contract keeps track of the durations of each deposit. Rewards are paid individually to each depositor.</p>
+<p>Staking FOLD tokens transfers LP deposit ownership to the <code>FOLDstaking</code> contract. The contract's owners (msig) require the ability to permanently claim FOLD balances in the interest of captive insurance claims through the <code>claimInsurance</code> function.</p>
+<p>In exchange, LPs are rewarded for staking (in addition to swap fees), and the compounding of their deposits' accrued fees is automated. This serves to incentivize a maximum number of compounds at optimal times with regards to gas costs.</p>
+<p>Multiple deposits may be made of several V3 positions. The duration of each deposit as well as its share of the total liquidity deposited in the vault (for that pair) determines how much the reward will be (it's paid from the WETH balance of the contract).</p>
+<p>There is no necessity for a Keeper to continuously compound rewards; however, withdrawals, after initiation, are pro-rated over 14 days if they are above a certain percentage of the total liquidity in the pool (borrowing from the queue design of mevETH with some small adjustment to fit).</p>
+<h2 id="materials-and-methods"><a class="header" href="#materials-and-methods">Materials and Methods</a></h2>
+<p>To become accustomed with the relevant contextual terrain for an undertaking of our scope, we've surveyed some existing work on the subject of "address[ing] the issue of attracting stable liquidity".</p>
+<p>Case in point: https://docs.pangolin.exchange/faqs/understanding-sar</p>
+<p>The formula therein for calculating rewards has a useful property:
+(position stake / total staked) x (stake duration / average stake duration)</p>
+<p>The useful property is in the second half of the expression. Division prevents an overflow from occurring (in the worst-case scenario) because, otherwise, duration would keep increasing (potentially indefinitely), and eventually cause an overflow in the result of the expression.</p>
+<p>When it comes to calculating rewards, specifically, we don't take into account the stake's entire duration, looping through each week on a need-to-count basis (we divide and conquer the problem of aggregating rewards). Claiming rewards or removing liquidity resets the deposit's timestamp to the current week (reducing its total rewards).</p>
+<p>For a separate matter, we do factor in the average stake duration. The following property is inherited from the so-called "sunshine &amp; rainbow" design doc: "you can only have 1 position per wallet; you can always add on top of your current position, but you can’t split your position into multiple pieces."</p>
+<p>Contrarily, Bunni, a lit protocol (<em>L</em>iquidity <em>I</em>ncentive <em>T</em>oken), wraps UNIv3 NFTs into a fungible token balance. Each balance is tightly coupled to the price range (ticks) for said NFT. As such, Bunni is its own sort of aggregator using multiple fungible token balances for one depositor.</p>
+<h2 id="analysis"><a class="header" href="#analysis">Analysis</a></h2>
+<p>On an individual basis, depositors may wish to decide the price range (ticks) <em>for their own</em> UNIv3 NFT. They can do this with <code>FOLDstaking.sol</code> by creating the NFT in advance (on an external platform), then calling our <code>deposit</code> function, which takes <code>DepositParams</code>.</p>
+<p>Choosing price ranges for the individual deposit automatically applies a vote to affect the deposits of stakers who show no personal preference for their own NFT. This is because <em>we don't force</em> (though we do <em>encourage</em>) our depositors to accept the responsibility of this choice.</p>
+<p>Instead, by calling our third <code>deposit</code> function (with the least number of parameters) they may accept the time-weighted median for the price range (which factors in the individual decisions of depositors for each pool, respectively).</p>
+<p>It is not necessary for LPs to manually claim fees collected by a V3 pool and redeposit them to increase the liquidity of a deposit. Uniswap is designed to handle this automatically, ensuring that fees are continuously working to enhance the earning potential of LPs.</p>
+<p>Bunni has a <code>compound</code> function to increase the value of share tokens (ERC20 balances that each correspond to a key, which is a pool and a price range to go with it). <code>FOLDstaking.sol</code> approaches rewards differently so there is no requirement for this.</p>
+<p>The difference also relates to how Bunni pays rewards pro rata to depositors' contribution per price range (relative to the total liquidity for that price range). <code>FOLDstaking.sol</code> pays rewards solely based on the duration of the deposit and the total size of the deposit (across all price ranges) relative to the total liquidity in the pool (again, across all price ranges).</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contents"><a class="header" href="#contents">Contents</a></h1>
+<ul>
+<li><a href="src/interfaces//src/interfaces/pool">pool</a></li>
+<li><a href="src/interfaces/INonfungiblePositionManager.sol/interface.INonfungiblePositionManager.html">INonfungiblePositionManager</a></li>
+<li><a href="src/interfaces/IUniswapV3Factory.sol/interface.IUniswapV3Factory.html">IUniswapV3Factory</a></li>
+<li><a href="src/interfaces/IUniswapV3MintCallback.sol/interface.IUniswapV3MintCallback.html">IUniswapV3MintCallback</a></li>
+<li><a href="src/interfaces/IUniswapV3Pool.sol/interface.IUniswapV3Pool.html">IUniswapV3Pool</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contents-1"><a class="header" href="#contents-1">Contents</a></h1>
+<ul>
+<li><a href="src/interfaces/pool/IUniswapV3PoolActions.sol/interface.IUniswapV3PoolActions.html">IUniswapV3PoolActions</a></li>
+<li><a href="src/interfaces/pool/IUniswapV3PoolDerivedState.sol/interface.IUniswapV3PoolDerivedState.html">IUniswapV3PoolDerivedState</a></li>
+<li><a href="src/interfaces/pool/IUniswapV3PoolEvents.sol/interface.IUniswapV3PoolEvents.html">IUniswapV3PoolEvents</a></li>
+<li><a href="src/interfaces/pool/IUniswapV3PoolImmutables.sol/interface.IUniswapV3PoolImmutables.html">IUniswapV3PoolImmutables</a></li>
+<li><a href="src/interfaces/pool/IUniswapV3PoolOwnerActions.sol/interface.IUniswapV3PoolOwnerActions.html">IUniswapV3PoolOwnerActions</a></li>
+<li><a href="src/interfaces/pool/IUniswapV3PoolState.sol/interface.IUniswapV3PoolState.html">IUniswapV3PoolState</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="iuniswapv3poolactions"><a class="header" href="#iuniswapv3poolactions">IUniswapV3PoolActions</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/interfaces/pool/IUniswapV3PoolActions.sol">Git Source</a></p>
+<p>Contains pool methods that can be called by anyone</p>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<p>Sets the initial price for the pool</p>
+<p><em>Price is represented as a sqrt(amountToken1/amountToken0) Q64.96 value</em></p>
+<pre><code class="language-solidity">function initialize(uint160 sqrtPriceX96) external;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>sqrtPriceX96</code></td><td><code>uint160</code></td><td>the initial sqrt price of the pool as a Q64.96</td></tr>
+</tbody></table>
+</div>
+<h3 id="mint"><a class="header" href="#mint">mint</a></h3>
+<p>Adds liquidity for the given recipient/tickLower/tickUpper position</p>
+<p><em>The caller of this method receives a callback in the form of IUniswapV3MintCallback#uniswapV3MintCallback
+in which they must pay any token0 or token1 owed for the liquidity. The amount of token0/token1 due depends
+on tickLower, tickUpper, the amount of liquidity, and the current price.</em></p>
+<pre><code class="language-solidity">function mint(address recipient, int24 tickLower, int24 tickUpper, uint128 amount, bytes calldata data)
+    external
+    returns (uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>recipient</code></td><td><code>address</code></td><td>The address for which the liquidity will be created</td></tr>
+<tr><td><code>tickLower</code></td><td><code>int24</code></td><td>The lower tick of the position in which to add liquidity</td></tr>
+<tr><td><code>tickUpper</code></td><td><code>int24</code></td><td>The upper tick of the position in which to add liquidity</td></tr>
+<tr><td><code>amount</code></td><td><code>uint128</code></td><td>The amount of liquidity to mint</td></tr>
+<tr><td><code>data</code></td><td><code>bytes</code></td><td>Any data that should be passed through to the callback</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 that was paid to mint the given amount of liquidity. Matches the value in the callback</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 that was paid to mint the given amount of liquidity. Matches the value in the callback</td></tr>
+</tbody></table>
+</div>
+<h3 id="collect"><a class="header" href="#collect">collect</a></h3>
+<p>Collects tokens owed to a position</p>
+<p><em>Does not recompute fees earned, which must be done either via mint or burn of any amount of liquidity.
+Collect must be called by the position owner. To withdraw only token0 or only token1, amount0Requested or
+amount1Requested may be set to zero. To withdraw all tokens owed, caller may pass any value greater than the
+actual tokens owed, e.g. type(uint128).max. Tokens owed may be from accumulated swap fees or burned liquidity.</em></p>
+<pre><code class="language-solidity">function collect(
+    address recipient,
+    int24 tickLower,
+    int24 tickUpper,
+    uint128 amount0Requested,
+    uint128 amount1Requested
+) external returns (uint128 amount0, uint128 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>recipient</code></td><td><code>address</code></td><td>The address which should receive the fees collected</td></tr>
+<tr><td><code>tickLower</code></td><td><code>int24</code></td><td>The lower tick of the position for which to collect fees</td></tr>
+<tr><td><code>tickUpper</code></td><td><code>int24</code></td><td>The upper tick of the position for which to collect fees</td></tr>
+<tr><td><code>amount0Requested</code></td><td><code>uint128</code></td><td>How much token0 should be withdrawn from the fees owed</td></tr>
+<tr><td><code>amount1Requested</code></td><td><code>uint128</code></td><td>How much token1 should be withdrawn from the fees owed</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0</code></td><td><code>uint128</code></td><td>The amount of fees collected in token0</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint128</code></td><td>The amount of fees collected in token1</td></tr>
+</tbody></table>
+</div>
+<h3 id="burn"><a class="header" href="#burn">burn</a></h3>
+<p>Burn liquidity from the sender and account tokens owed for the liquidity to the position</p>
+<p><em>Can be used to trigger a recalculation of fees owed to a position by calling with an amount of 0</em></p>
+<p><em>Fees must be collected separately via a call to #collect</em></p>
+<pre><code class="language-solidity">function burn(int24 tickLower, int24 tickUpper, uint128 amount) external returns (uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tickLower</code></td><td><code>int24</code></td><td>The lower tick of the position for which to burn liquidity</td></tr>
+<tr><td><code>tickUpper</code></td><td><code>int24</code></td><td>The upper tick of the position for which to burn liquidity</td></tr>
+<tr><td><code>amount</code></td><td><code>uint128</code></td><td>How much liquidity to burn</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 sent to the recipient</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 sent to the recipient</td></tr>
+</tbody></table>
+</div>
+<h3 id="swap"><a class="header" href="#swap">swap</a></h3>
+<p>Swap token0 for token1, or token1 for token0</p>
+<p><em>The caller of this method receives a callback in the form of IUniswapV3SwapCallback#uniswapV3SwapCallback</em></p>
+<pre><code class="language-solidity">function swap(
+    address recipient,
+    bool zeroForOne,
+    int256 amountSpecified,
+    uint160 sqrtPriceLimitX96,
+    bytes calldata data
+) external returns (int256 amount0, int256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>recipient</code></td><td><code>address</code></td><td>The address to receive the output of the swap</td></tr>
+<tr><td><code>zeroForOne</code></td><td><code>bool</code></td><td>The direction of the swap, true for token0 to token1, false for token1 to token0</td></tr>
+<tr><td><code>amountSpecified</code></td><td><code>int256</code></td><td>The amount of the swap, which implicitly configures the swap as exact input (positive), or exact output (negative)</td></tr>
+<tr><td><code>sqrtPriceLimitX96</code></td><td><code>uint160</code></td><td>The Q64.96 sqrt price limit. If zero for one, the price cannot be less than this value after the swap. If one for zero, the price cannot be greater than this value after the swap</td></tr>
+<tr><td><code>data</code></td><td><code>bytes</code></td><td>Any data to be passed through to the callback</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0</code></td><td><code>int256</code></td><td>The delta of the balance of token0 of the pool, exact when negative, minimum when positive</td></tr>
+<tr><td><code>amount1</code></td><td><code>int256</code></td><td>The delta of the balance of token1 of the pool, exact when negative, minimum when positive</td></tr>
+</tbody></table>
+</div>
+<h3 id="flash"><a class="header" href="#flash">flash</a></h3>
+<p>Receive token0 and/or token1 and pay it back, plus a fee, in the callback</p>
+<p><em>The caller of this method receives a callback in the form of IUniswapV3FlashCallback#uniswapV3FlashCallback</em></p>
+<p><em>Can be used to donate underlying tokens pro-rata to currently in-range liquidity providers by calling
+with 0 amount{0,1} and sending the donation amount(s) from the callback</em></p>
+<pre><code class="language-solidity">function flash(address recipient, uint256 amount0, uint256 amount1, bytes calldata data) external;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>recipient</code></td><td><code>address</code></td><td>The address which will receive the token0 and token1 amounts</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 to send</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 to send</td></tr>
+<tr><td><code>data</code></td><td><code>bytes</code></td><td>Any data to be passed through to the callback</td></tr>
+</tbody></table>
+</div>
+<h3 id="increaseobservationcardinalitynext"><a class="header" href="#increaseobservationcardinalitynext">increaseObservationCardinalityNext</a></h3>
+<p>Increase the maximum number of price and liquidity observations that this pool will store</p>
+<p><em>This method is no-op if the pool already has an observationCardinalityNext greater than or equal to
+the input observationCardinalityNext.</em></p>
+<pre><code class="language-solidity">function increaseObservationCardinalityNext(uint16 observationCardinalityNext) external;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>observationCardinalityNext</code></td><td><code>uint16</code></td><td>The desired minimum number of observations for the pool to store</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="iuniswapv3poolderivedstate"><a class="header" href="#iuniswapv3poolderivedstate">IUniswapV3PoolDerivedState</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/interfaces/pool/IUniswapV3PoolDerivedState.sol">Git Source</a></p>
+<p>Contains view functions to provide information about the pool that is computed rather than stored on the
+blockchain. The functions here may have variable gas costs.</p>
+<h2 id="functions-1"><a class="header" href="#functions-1">Functions</a></h2>
+<h3 id="observe"><a class="header" href="#observe">observe</a></h3>
+<p>Returns the cumulative tick and liquidity as of each timestamp <code>secondsAgo</code> from the current block timestamp</p>
+<p><em>To get a time weighted average tick or liquidity-in-range, you must call this with two values, one representing
+the beginning of the period and another for the end of the period. E.g., to get the last hour time-weighted average tick,
+you must call it with secondsAgos = [3600, 0].</em></p>
+<p><em>The time weighted average tick represents the geometric time weighted average price of the pool, in
+log base sqrt(1.0001) of token1 / token0. The TickMath library can be used to go from a tick value to a ratio.</em></p>
+<pre><code class="language-solidity">function observe(uint32[] calldata secondsAgos)
+    external
+    view
+    returns (int56[] memory tickCumulatives, uint160[] memory secondsPerLiquidityCumulativeX128s);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>secondsAgos</code></td><td><code>uint32[]</code></td><td>From how long ago each cumulative tick and liquidity value should be returned</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tickCumulatives</code></td><td><code>int56[]</code></td><td>Cumulative tick values as of each <code>secondsAgos</code> from the current block timestamp</td></tr>
+<tr><td><code>secondsPerLiquidityCumulativeX128s</code></td><td><code>uint160[]</code></td><td>Cumulative seconds per liquidity-in-range value as of each <code>secondsAgos</code> from the current block timestamp</td></tr>
+</tbody></table>
+</div>
+<h3 id="snapshotcumulativesinside"><a class="header" href="#snapshotcumulativesinside">snapshotCumulativesInside</a></h3>
+<p>Returns a snapshot of the tick cumulative, seconds per liquidity and seconds inside a tick range</p>
+<p><em>Snapshots must only be compared to other snapshots, taken over a period for which a position existed.
+I.e., snapshots cannot be compared if a position is not held for the entire period between when the first
+snapshot is taken and the second snapshot is taken.</em></p>
+<pre><code class="language-solidity">function snapshotCumulativesInside(int24 tickLower, int24 tickUpper)
+    external
+    view
+    returns (int56 tickCumulativeInside, uint160 secondsPerLiquidityInsideX128, uint32 secondsInside);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tickLower</code></td><td><code>int24</code></td><td>The lower tick of the range</td></tr>
+<tr><td><code>tickUpper</code></td><td><code>int24</code></td><td>The upper tick of the range</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tickCumulativeInside</code></td><td><code>int56</code></td><td>The snapshot of the tick accumulator for the range</td></tr>
+<tr><td><code>secondsPerLiquidityInsideX128</code></td><td><code>uint160</code></td><td>The snapshot of seconds per liquidity for the range</td></tr>
+<tr><td><code>secondsInside</code></td><td><code>uint32</code></td><td>The snapshot of seconds per liquidity for the range</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="iuniswapv3poolevents"><a class="header" href="#iuniswapv3poolevents">IUniswapV3PoolEvents</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/interfaces/pool/IUniswapV3PoolEvents.sol">Git Source</a></p>
+<p>Contains all events emitted by the pool</p>
+<h2 id="events"><a class="header" href="#events">Events</a></h2>
+<h3 id="initialize-1"><a class="header" href="#initialize-1">Initialize</a></h3>
+<p>Emitted exactly once by a pool when #initialize is first called on the pool</p>
+<p><em>Mint/Burn/Swap cannot be emitted by the pool before Initialize</em></p>
+<pre><code class="language-solidity">event Initialize(uint160 sqrtPriceX96, int24 tick);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>sqrtPriceX96</code></td><td><code>uint160</code></td><td>The initial sqrt price of the pool, as a Q64.96</td></tr>
+<tr><td><code>tick</code></td><td><code>int24</code></td><td>The initial tick of the pool, i.e. log base 1.0001 of the starting price of the pool</td></tr>
+</tbody></table>
+</div>
+<h3 id="mint-1"><a class="header" href="#mint-1">Mint</a></h3>
+<p>Emitted when liquidity is minted for a given position</p>
+<pre><code class="language-solidity">event Mint(
+    address sender,
+    address indexed owner,
+    int24 indexed tickLower,
+    int24 indexed tickUpper,
+    uint128 amount,
+    uint256 amount0,
+    uint256 amount1
+);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>sender</code></td><td><code>address</code></td><td>The address that minted the liquidity</td></tr>
+<tr><td><code>owner</code></td><td><code>address</code></td><td>The owner of the position and recipient of any minted liquidity</td></tr>
+<tr><td><code>tickLower</code></td><td><code>int24</code></td><td>The lower tick of the position</td></tr>
+<tr><td><code>tickUpper</code></td><td><code>int24</code></td><td>The upper tick of the position</td></tr>
+<tr><td><code>amount</code></td><td><code>uint128</code></td><td>The amount of liquidity minted to the position range</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>How much token0 was required for the minted liquidity</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>How much token1 was required for the minted liquidity</td></tr>
+</tbody></table>
+</div>
+<h3 id="collect-1"><a class="header" href="#collect-1">Collect</a></h3>
+<p>Emitted when fees are collected by the owner of a position</p>
+<p><em>Collect events may be emitted with zero amount0 and amount1 when the caller chooses not to collect fees</em></p>
+<pre><code class="language-solidity">event Collect(
+    address indexed owner,
+    address recipient,
+    int24 indexed tickLower,
+    int24 indexed tickUpper,
+    uint128 amount0,
+    uint128 amount1
+);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>owner</code></td><td><code>address</code></td><td>The owner of the position for which fees are collected</td></tr>
+<tr><td><code>recipient</code></td><td><code>address</code></td><td></td></tr>
+<tr><td><code>tickLower</code></td><td><code>int24</code></td><td>The lower tick of the position</td></tr>
+<tr><td><code>tickUpper</code></td><td><code>int24</code></td><td>The upper tick of the position</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint128</code></td><td>The amount of token0 fees collected</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint128</code></td><td>The amount of token1 fees collected</td></tr>
+</tbody></table>
+</div>
+<h3 id="burn-1"><a class="header" href="#burn-1">Burn</a></h3>
+<p>Emitted when a position's liquidity is removed</p>
+<p><em>Does not withdraw any fees earned by the liquidity position, which must be withdrawn via #collect</em></p>
+<pre><code class="language-solidity">event Burn(
+    address indexed owner,
+    int24 indexed tickLower,
+    int24 indexed tickUpper,
+    uint128 amount,
+    uint256 amount0,
+    uint256 amount1
+);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>owner</code></td><td><code>address</code></td><td>The owner of the position for which liquidity is removed</td></tr>
+<tr><td><code>tickLower</code></td><td><code>int24</code></td><td>The lower tick of the position</td></tr>
+<tr><td><code>tickUpper</code></td><td><code>int24</code></td><td>The upper tick of the position</td></tr>
+<tr><td><code>amount</code></td><td><code>uint128</code></td><td>The amount of liquidity to remove</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 withdrawn</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 withdrawn</td></tr>
+</tbody></table>
+</div>
+<h3 id="swap-1"><a class="header" href="#swap-1">Swap</a></h3>
+<p>Emitted by the pool for any swaps between token0 and token1</p>
+<pre><code class="language-solidity">event Swap(
+    address indexed sender,
+    address indexed recipient,
+    int256 amount0,
+    int256 amount1,
+    uint160 sqrtPriceX96,
+    uint128 liquidity,
+    int24 tick
+);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>sender</code></td><td><code>address</code></td><td>The address that initiated the swap call, and that received the callback</td></tr>
+<tr><td><code>recipient</code></td><td><code>address</code></td><td>The address that received the output of the swap</td></tr>
+<tr><td><code>amount0</code></td><td><code>int256</code></td><td>The delta of the token0 balance of the pool</td></tr>
+<tr><td><code>amount1</code></td><td><code>int256</code></td><td>The delta of the token1 balance of the pool</td></tr>
+<tr><td><code>sqrtPriceX96</code></td><td><code>uint160</code></td><td>The sqrt(price) of the pool after the swap, as a Q64.96</td></tr>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The liquidity of the pool after the swap</td></tr>
+<tr><td><code>tick</code></td><td><code>int24</code></td><td>The log base 1.0001 of price of the pool after the swap</td></tr>
+</tbody></table>
+</div>
+<h3 id="flash-1"><a class="header" href="#flash-1">Flash</a></h3>
+<p>Emitted by the pool for any flashes of token0/token1</p>
+<pre><code class="language-solidity">event Flash(
+    address indexed sender, address indexed recipient, uint256 amount0, uint256 amount1, uint256 paid0, uint256 paid1
+);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>sender</code></td><td><code>address</code></td><td>The address that initiated the swap call, and that received the callback</td></tr>
+<tr><td><code>recipient</code></td><td><code>address</code></td><td>The address that received the tokens from flash</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 that was flashed</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 that was flashed</td></tr>
+<tr><td><code>paid0</code></td><td><code>uint256</code></td><td>The amount of token0 paid for the flash, which can exceed the amount0 plus the fee</td></tr>
+<tr><td><code>paid1</code></td><td><code>uint256</code></td><td>The amount of token1 paid for the flash, which can exceed the amount1 plus the fee</td></tr>
+</tbody></table>
+</div>
+<h3 id="increaseobservationcardinalitynext-1"><a class="header" href="#increaseobservationcardinalitynext-1">IncreaseObservationCardinalityNext</a></h3>
+<p>Emitted by the pool for increases to the number of observations that can be stored</p>
+<p><em>observationCardinalityNext is not the observation cardinality until an observation is written at the index
+just before a mint/swap/burn.</em></p>
+<pre><code class="language-solidity">event IncreaseObservationCardinalityNext(uint16 observationCardinalityNextOld, uint16 observationCardinalityNextNew);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>observationCardinalityNextOld</code></td><td><code>uint16</code></td><td>The previous value of the next observation cardinality</td></tr>
+<tr><td><code>observationCardinalityNextNew</code></td><td><code>uint16</code></td><td>The updated value of the next observation cardinality</td></tr>
+</tbody></table>
+</div>
+<h3 id="setfeeprotocol"><a class="header" href="#setfeeprotocol">SetFeeProtocol</a></h3>
+<p>Emitted when the protocol fee is changed by the pool</p>
+<pre><code class="language-solidity">event SetFeeProtocol(uint8 feeProtocol0Old, uint8 feeProtocol1Old, uint8 feeProtocol0New, uint8 feeProtocol1New);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>feeProtocol0Old</code></td><td><code>uint8</code></td><td>The previous value of the token0 protocol fee</td></tr>
+<tr><td><code>feeProtocol1Old</code></td><td><code>uint8</code></td><td>The previous value of the token1 protocol fee</td></tr>
+<tr><td><code>feeProtocol0New</code></td><td><code>uint8</code></td><td>The updated value of the token0 protocol fee</td></tr>
+<tr><td><code>feeProtocol1New</code></td><td><code>uint8</code></td><td>The updated value of the token1 protocol fee</td></tr>
+</tbody></table>
+</div>
+<h3 id="collectprotocol"><a class="header" href="#collectprotocol">CollectProtocol</a></h3>
+<p>Emitted when the collected protocol fees are withdrawn by the factory owner</p>
+<pre><code class="language-solidity">event CollectProtocol(address indexed sender, address indexed recipient, uint128 amount0, uint128 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>sender</code></td><td><code>address</code></td><td>The address that collects the protocol fees</td></tr>
+<tr><td><code>recipient</code></td><td><code>address</code></td><td>The address that receives the collected protocol fees</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint128</code></td><td>The amount of token0 protocol fees that is withdrawn</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint128</code></td><td></td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="iuniswapv3poolimmutables"><a class="header" href="#iuniswapv3poolimmutables">IUniswapV3PoolImmutables</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/interfaces/pool/IUniswapV3PoolImmutables.sol">Git Source</a></p>
+<p>These parameters are fixed for a pool forever, i.e., the methods will always return the same values</p>
+<h2 id="functions-2"><a class="header" href="#functions-2">Functions</a></h2>
+<h3 id="factory"><a class="header" href="#factory">factory</a></h3>
+<p>The contract that deployed the pool, which must adhere to the IUniswapV3Factory interface</p>
+<pre><code class="language-solidity">function factory() external view returns (address);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>&lt;none&gt;</code></td><td><code>address</code></td><td>The contract address</td></tr>
+</tbody></table>
+</div>
+<h3 id="token0"><a class="header" href="#token0">token0</a></h3>
+<p>The first of the two tokens of the pool, sorted by address</p>
+<pre><code class="language-solidity">function token0() external view returns (address);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>&lt;none&gt;</code></td><td><code>address</code></td><td>The token contract address</td></tr>
+</tbody></table>
+</div>
+<h3 id="token1"><a class="header" href="#token1">token1</a></h3>
+<p>The second of the two tokens of the pool, sorted by address</p>
+<pre><code class="language-solidity">function token1() external view returns (address);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>&lt;none&gt;</code></td><td><code>address</code></td><td>The token contract address</td></tr>
+</tbody></table>
+</div>
+<h3 id="fee"><a class="header" href="#fee">fee</a></h3>
+<p>The pool's fee in hundredths of a bip, i.e. 1e-6</p>
+<pre><code class="language-solidity">function fee() external view returns (uint24);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>&lt;none&gt;</code></td><td><code>uint24</code></td><td>The fee</td></tr>
+</tbody></table>
+</div>
+<h3 id="tickspacing"><a class="header" href="#tickspacing">tickSpacing</a></h3>
+<p>The pool tick spacing</p>
+<p><em>Ticks can only be used at multiples of this value, minimum of 1 and always positive
+e.g.: a tickSpacing of 3 means ticks can be initialized every 3rd tick, i.e., ..., -6, -3, 0, 3, 6, ...
+This value is an int24 to avoid casting even though it is always positive.</em></p>
+<pre><code class="language-solidity">function tickSpacing() external view returns (int24);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>&lt;none&gt;</code></td><td><code>int24</code></td><td>The tick spacing</td></tr>
+</tbody></table>
+</div>
+<h3 id="maxliquiditypertick"><a class="header" href="#maxliquiditypertick">maxLiquidityPerTick</a></h3>
+<p>The maximum amount of position liquidity that can use any tick in the range</p>
+<p><em>This parameter is enforced per tick to prevent liquidity from overflowing a uint128 at any point, and
+also prevents out-of-range liquidity from being used to prevent adding in-range liquidity to a pool</em></p>
+<pre><code class="language-solidity">function maxLiquidityPerTick() external view returns (uint128);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>&lt;none&gt;</code></td><td><code>uint128</code></td><td>The max amount of liquidity per tick</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="iuniswapv3poolowneractions"><a class="header" href="#iuniswapv3poolowneractions">IUniswapV3PoolOwnerActions</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/interfaces/pool/IUniswapV3PoolOwnerActions.sol">Git Source</a></p>
+<p>Contains pool methods that may only be called by the factory owner</p>
+<h2 id="functions-3"><a class="header" href="#functions-3">Functions</a></h2>
+<h3 id="setfeeprotocol-1"><a class="header" href="#setfeeprotocol-1">setFeeProtocol</a></h3>
+<p>Set the denominator of the protocol's % share of the fees</p>
+<pre><code class="language-solidity">function setFeeProtocol(uint8 feeProtocol0, uint8 feeProtocol1) external;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>feeProtocol0</code></td><td><code>uint8</code></td><td>new protocol fee for token0 of the pool</td></tr>
+<tr><td><code>feeProtocol1</code></td><td><code>uint8</code></td><td>new protocol fee for token1 of the pool</td></tr>
+</tbody></table>
+</div>
+<h3 id="collectprotocol-1"><a class="header" href="#collectprotocol-1">collectProtocol</a></h3>
+<p>Collect the protocol fee accrued to the pool</p>
+<pre><code class="language-solidity">function collectProtocol(address recipient, uint128 amount0Requested, uint128 amount1Requested)
+    external
+    returns (uint128 amount0, uint128 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>recipient</code></td><td><code>address</code></td><td>The address to which collected protocol fees should be sent</td></tr>
+<tr><td><code>amount0Requested</code></td><td><code>uint128</code></td><td>The maximum amount of token0 to send, can be 0 to collect fees in only token1</td></tr>
+<tr><td><code>amount1Requested</code></td><td><code>uint128</code></td><td>The maximum amount of token1 to send, can be 0 to collect fees in only token0</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0</code></td><td><code>uint128</code></td><td>The protocol fee collected in token0</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint128</code></td><td>The protocol fee collected in token1</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="iuniswapv3poolstate"><a class="header" href="#iuniswapv3poolstate">IUniswapV3PoolState</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/interfaces/pool/IUniswapV3PoolState.sol">Git Source</a></p>
+<p>These methods compose the pool's state, and can change with any frequency including multiple times
+per transaction</p>
+<h2 id="functions-4"><a class="header" href="#functions-4">Functions</a></h2>
+<h3 id="slot0"><a class="header" href="#slot0">slot0</a></h3>
+<p>The 0th storage slot in the pool stores many values, and is exposed as a single method to save gas
+when accessed externally.</p>
+<pre><code class="language-solidity">function slot0()
+    external
+    view
+    returns (
+        uint160 sqrtPriceX96,
+        int24 tick,
+        uint16 observationIndex,
+        uint16 observationCardinality,
+        uint16 observationCardinalityNext,
+        uint8 feeProtocol,
+        bool unlocked
+    );
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>sqrtPriceX96</code></td><td><code>uint160</code></td><td>The current price of the pool as a sqrt(token1/token0) Q64.96 value tick The current tick of the pool, i.e. according to the last tick transition that was run. This value may not always be equal to SqrtTickMath.getTickAtSqrtRatio(sqrtPriceX96) if the price is on a tick boundary. observationIndex The index of the last oracle observation that was written, observationCardinality The current maximum number of observations stored in the pool, observationCardinalityNext The next maximum number of observations, to be updated when the observation. feeProtocol The protocol fee for both tokens of the pool. Encoded as two 4 bit values, where the protocol fee of token1 is shifted 4 bits and the protocol fee of token0 is the lower 4 bits. Used as the denominator of a fraction of the swap fee, e.g. 4 means 1/4th of the swap fee. unlocked Whether the pool is currently locked to reentrancy</td></tr>
+<tr><td><code>tick</code></td><td><code>int24</code></td><td></td></tr>
+<tr><td><code>observationIndex</code></td><td><code>uint16</code></td><td></td></tr>
+<tr><td><code>observationCardinality</code></td><td><code>uint16</code></td><td></td></tr>
+<tr><td><code>observationCardinalityNext</code></td><td><code>uint16</code></td><td></td></tr>
+<tr><td><code>feeProtocol</code></td><td><code>uint8</code></td><td></td></tr>
+<tr><td><code>unlocked</code></td><td><code>bool</code></td><td></td></tr>
+</tbody></table>
+</div>
+<h3 id="feegrowthglobal0x128"><a class="header" href="#feegrowthglobal0x128">feeGrowthGlobal0X128</a></h3>
+<p>The fee growth as a Q128.128 fees of token0 collected per unit of liquidity for the entire life of the pool</p>
+<p><em>This value can overflow the uint256</em></p>
+<pre><code class="language-solidity">function feeGrowthGlobal0X128() external view returns (uint256);
+</code></pre>
+<h3 id="feegrowthglobal1x128"><a class="header" href="#feegrowthglobal1x128">feeGrowthGlobal1X128</a></h3>
+<p>The fee growth as a Q128.128 fees of token1 collected per unit of liquidity for the entire life of the pool</p>
+<p><em>This value can overflow the uint256</em></p>
+<pre><code class="language-solidity">function feeGrowthGlobal1X128() external view returns (uint256);
+</code></pre>
+<h3 id="protocolfees"><a class="header" href="#protocolfees">protocolFees</a></h3>
+<p>The amounts of token0 and token1 that are owed to the protocol</p>
+<p><em>Protocol fees will never exceed uint128 max in either token</em></p>
+<pre><code class="language-solidity">function protocolFees() external view returns (uint128 token0, uint128 token1);
+</code></pre>
+<h3 id="liquidity"><a class="header" href="#liquidity">liquidity</a></h3>
+<p>The currently in range liquidity available to the pool</p>
+<p><em>This value has no relationship to the total liquidity across all ticks</em></p>
+<pre><code class="language-solidity">function liquidity() external view returns (uint128);
+</code></pre>
+<h3 id="ticks"><a class="header" href="#ticks">ticks</a></h3>
+<p>Look up information about a specific tick in the pool</p>
+<pre><code class="language-solidity">function ticks(int24 tick)
+    external
+    view
+    returns (
+        uint128 liquidityGross,
+        int128 liquidityNet,
+        uint256 feeGrowthOutside0X128,
+        uint256 feeGrowthOutside1X128,
+        int56 tickCumulativeOutside,
+        uint160 secondsPerLiquidityOutsideX128,
+        uint32 secondsOutside,
+        bool initialized
+    );
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tick</code></td><td><code>int24</code></td><td>The tick to look up</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>liquidityGross</code></td><td><code>uint128</code></td><td>the total amount of position liquidity that uses the pool either as tick lower or tick upper, liquidityNet how much liquidity changes when the pool price crosses the tick, feeGrowthOutside0X128 the fee growth on the other side of the tick from the current tick in token0, feeGrowthOutside1X128 the fee growth on the other side of the tick from the current tick in token1, tickCumulativeOutside the cumulative tick value on the other side of the tick from the current tick secondsPerLiquidityOutsideX128 the seconds spent per liquidity on the other side of the tick from the current tick, secondsOutside the seconds spent on the other side of the tick from the current tick, initialized Set to true if the tick is initialized, i.e. liquidityGross is greater than 0, otherwise equal to false. Outside values can only be used if the tick is initialized, i.e. if liquidityGross is greater than 0. In addition, these values are only relative and must be used only in comparison to previous snapshots for a specific position.</td></tr>
+<tr><td><code>liquidityNet</code></td><td><code>int128</code></td><td></td></tr>
+<tr><td><code>feeGrowthOutside0X128</code></td><td><code>uint256</code></td><td></td></tr>
+<tr><td><code>feeGrowthOutside1X128</code></td><td><code>uint256</code></td><td></td></tr>
+<tr><td><code>tickCumulativeOutside</code></td><td><code>int56</code></td><td></td></tr>
+<tr><td><code>secondsPerLiquidityOutsideX128</code></td><td><code>uint160</code></td><td></td></tr>
+<tr><td><code>secondsOutside</code></td><td><code>uint32</code></td><td></td></tr>
+<tr><td><code>initialized</code></td><td><code>bool</code></td><td></td></tr>
+</tbody></table>
+</div>
+<h3 id="tickbitmap"><a class="header" href="#tickbitmap">tickBitmap</a></h3>
+<p>Returns 256 packed tick initialized boolean values. See TickBitmap for more information</p>
+<pre><code class="language-solidity">function tickBitmap(int16 wordPosition) external view returns (uint256);
+</code></pre>
+<h3 id="positions"><a class="header" href="#positions">positions</a></h3>
+<p>Returns the information about a position by the position's key</p>
+<pre><code class="language-solidity">function positions(bytes32 key)
+    external
+    view
+    returns (
+        uint128 _liquidity,
+        uint256 feeGrowthInside0LastX128,
+        uint256 feeGrowthInside1LastX128,
+        uint128 tokensOwed0,
+        uint128 tokensOwed1
+    );
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>key</code></td><td><code>bytes32</code></td><td>The position's key is a hash of a preimage composed by the owner, tickLower and tickUpper</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>_liquidity</code></td><td><code>uint128</code></td><td>The amount of liquidity in the position, Returns feeGrowthInside0LastX128 fee growth of token0 inside the tick range as of the last mint/burn/poke, Returns feeGrowthInside1LastX128 fee growth of token1 inside the tick range as of the last mint/burn/poke, Returns tokensOwed0 the computed amount of token0 owed to the position as of the last mint/burn/poke, Returns tokensOwed1 the computed amount of token1 owed to the position as of the last mint/burn/poke</td></tr>
+<tr><td><code>feeGrowthInside0LastX128</code></td><td><code>uint256</code></td><td></td></tr>
+<tr><td><code>feeGrowthInside1LastX128</code></td><td><code>uint256</code></td><td></td></tr>
+<tr><td><code>tokensOwed0</code></td><td><code>uint128</code></td><td></td></tr>
+<tr><td><code>tokensOwed1</code></td><td><code>uint128</code></td><td></td></tr>
+</tbody></table>
+</div>
+<h3 id="observations"><a class="header" href="#observations">observations</a></h3>
+<p>Returns data about a specific observation index</p>
+<p><em>You most likely want to use #observe() instead of this method to get an observation as of some amount of time
+ago, rather than at a specific index in the array.</em></p>
+<pre><code class="language-solidity">function observations(uint256 index)
+    external
+    view
+    returns (uint32 blockTimestamp, int56 tickCumulative, uint160 secondsPerLiquidityCumulativeX128, bool initialized);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>index</code></td><td><code>uint256</code></td><td>The element of the observations array to fetch</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>blockTimestamp</code></td><td><code>uint32</code></td><td>The timestamp of the observation, Returns tickCumulative the tick multiplied by seconds elapsed for the life of the pool as of the observation timestamp, Returns secondsPerLiquidityCumulativeX128 the seconds per in range liquidity for the life of the pool as of the observation timestamp, Returns initialized whether the observation has been initialized and the values are safe to use</td></tr>
+<tr><td><code>tickCumulative</code></td><td><code>int56</code></td><td></td></tr>
+<tr><td><code>secondsPerLiquidityCumulativeX128</code></td><td><code>uint160</code></td><td></td></tr>
+<tr><td><code>initialized</code></td><td><code>bool</code></td><td></td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="inonfungiblepositionmanager"><a class="header" href="#inonfungiblepositionmanager">INonfungiblePositionManager</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/interfaces/INonfungiblePositionManager.sol">Git Source</a></p>
+<p>Wraps Uniswap V3 positions in a non-fungible token interface which allows for them to be transferred
+and authorized.</p>
+<h2 id="functions-5"><a class="header" href="#functions-5">Functions</a></h2>
+<h3 id="positions-1"><a class="header" href="#positions-1">positions</a></h3>
+<p>Returns the position information associated with a given token ID.</p>
+<p><em>Throws if the token ID is not valid.</em></p>
+<pre><code class="language-solidity">function positions(uint256 tokenId)
+    external
+    view
+    returns (
+        uint96 nonce,
+        address operator,
+        address token0,
+        address token1,
+        uint24 fee,
+        int24 tickLower,
+        int24 tickUpper,
+        uint128 liquidity,
+        uint256 feeGrowthInside0LastX128,
+        uint256 feeGrowthInside1LastX128,
+        uint128 tokensOwed0,
+        uint128 tokensOwed1
+    );
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token that represents the position</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>nonce</code></td><td><code>uint96</code></td><td>The nonce for permits</td></tr>
+<tr><td><code>operator</code></td><td><code>address</code></td><td>The address that is approved for spending</td></tr>
+<tr><td><code>token0</code></td><td><code>address</code></td><td>The address of the token0 for a specific pool</td></tr>
+<tr><td><code>token1</code></td><td><code>address</code></td><td>The address of the token1 for a specific pool</td></tr>
+<tr><td><code>fee</code></td><td><code>uint24</code></td><td>The fee associated with the pool</td></tr>
+<tr><td><code>tickLower</code></td><td><code>int24</code></td><td>The lower end of the tick range for the position</td></tr>
+<tr><td><code>tickUpper</code></td><td><code>int24</code></td><td>The higher end of the tick range for the position</td></tr>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The liquidity of the position</td></tr>
+<tr><td><code>feeGrowthInside0LastX128</code></td><td><code>uint256</code></td><td>The fee growth of token0 as of the last action on the individual position</td></tr>
+<tr><td><code>feeGrowthInside1LastX128</code></td><td><code>uint256</code></td><td>The fee growth of token1 as of the last action on the individual position</td></tr>
+<tr><td><code>tokensOwed0</code></td><td><code>uint128</code></td><td>The uncollected amount of token0 owed to the position as of the last computation</td></tr>
+<tr><td><code>tokensOwed1</code></td><td><code>uint128</code></td><td>The uncollected amount of token1 owed to the position as of the last computation</td></tr>
+</tbody></table>
+</div>
+<h3 id="mint-2"><a class="header" href="#mint-2">mint</a></h3>
+<p>Creates a new position wrapped in a NFT</p>
+<p><em>Call this when the pool does exist and is initialized. Note that if the pool is created but not initialized
+a method does not exist, i.e. the pool is assumed to be initialized.</em></p>
+<pre><code class="language-solidity">function mint(MintParams calldata params)
+    external
+    payable
+    returns (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>MintParams</code></td><td>The params necessary to mint a position, encoded as <code>MintParams</code> in calldata</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token that represents the minted position</td></tr>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The amount of liquidity for this position</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1</td></tr>
+</tbody></table>
+</div>
+<h3 id="increaseliquidity"><a class="header" href="#increaseliquidity">increaseLiquidity</a></h3>
+<p>Increases the amount of liquidity in a position, with tokens paid by the <code>msg.sender</code></p>
+<pre><code class="language-solidity">function increaseLiquidity(IncreaseLiquidityParams calldata params)
+    external
+    payable
+    returns (uint128 liquidity, uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>IncreaseLiquidityParams</code></td><td>tokenId The ID of the token for which liquidity is being increased, amount0Desired The desired amount of token0 to be spent, amount1Desired The desired amount of token1 to be spent, amount0Min The minimum amount of token0 to spend, which serves as a slippage check, amount1Min The minimum amount of token1 to spend, which serves as a slippage check, deadline The time by which the transaction must be included to effect the change</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The new liquidity amount as a result of the increase</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 to acheive resulting liquidity</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 to acheive resulting liquidity</td></tr>
+</tbody></table>
+</div>
+<h3 id="decreaseliquidity"><a class="header" href="#decreaseliquidity">decreaseLiquidity</a></h3>
+<p>Decreases the amount of liquidity in a position and accounts it to the position</p>
+<pre><code class="language-solidity">function decreaseLiquidity(DecreaseLiquidityParams calldata params)
+    external
+    payable
+    returns (uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>DecreaseLiquidityParams</code></td><td>tokenId The ID of the token for which liquidity is being decreased, amount The amount by which liquidity will be decreased, amount0Min The minimum amount of token0 that should be accounted for the burned liquidity, amount1Min The minimum amount of token1 that should be accounted for the burned liquidity, deadline The time by which the transaction must be included to effect the change</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 accounted to the position's tokens owed</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 accounted to the position's tokens owed</td></tr>
+</tbody></table>
+</div>
+<h3 id="collect-2"><a class="header" href="#collect-2">collect</a></h3>
+<p>Collects up to a maximum amount of fees owed to a specific position to the recipient</p>
+<pre><code class="language-solidity">function collect(CollectParams calldata params) external payable returns (uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>CollectParams</code></td><td>tokenId The ID of the NFT for which tokens are being collected, recipient The account that should receive the tokens, amount0Max The maximum amount of token0 to collect, amount1Max The maximum amount of token1 to collect</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of fees collected in token0</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of fees collected in token1</td></tr>
+</tbody></table>
+</div>
+<h3 id="burn-2"><a class="header" href="#burn-2">burn</a></h3>
+<p>Burns a token ID, which deletes it from the NFT contract. The token must have 0 liquidity and all tokens
+must be collected first.</p>
+<pre><code class="language-solidity">function burn(uint256 tokenId) external payable;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token that is being burned</td></tr>
+</tbody></table>
+</div>
+<h2 id="events-1"><a class="header" href="#events-1">Events</a></h2>
+<h3 id="increaseliquidity-1"><a class="header" href="#increaseliquidity-1">IncreaseLiquidity</a></h3>
+<p>Emitted when liquidity is increased for a position NFT</p>
+<p><em>Also emitted when a token is minted</em></p>
+<pre><code class="language-solidity">event IncreaseLiquidity(uint256 indexed tokenId, uint128 liquidity, uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token for which liquidity was increased</td></tr>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The amount by which liquidity for the NFT position was increased</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 that was paid for the increase in liquidity</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 that was paid for the increase in liquidity</td></tr>
+</tbody></table>
+</div>
+<h3 id="decreaseliquidity-1"><a class="header" href="#decreaseliquidity-1">DecreaseLiquidity</a></h3>
+<p>Emitted when liquidity is decreased for a position NFT</p>
+<pre><code class="language-solidity">event DecreaseLiquidity(uint256 indexed tokenId, uint128 liquidity, uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token for which liquidity was decreased</td></tr>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The amount by which liquidity for the NFT position was decreased</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 that was accounted for the decrease in liquidity</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 that was accounted for the decrease in liquidity</td></tr>
+</tbody></table>
+</div>
+<h3 id="collect-3"><a class="header" href="#collect-3">Collect</a></h3>
+<p>Emitted when tokens are collected for a position NFT</p>
+<p><em>The amounts reported may not be exactly equivalent to the amounts transferred, due to rounding behavior</em></p>
+<pre><code class="language-solidity">event Collect(uint256 indexed tokenId, address recipient, uint256 amount0, uint256 amount1);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenId</code></td><td><code>uint256</code></td><td>The ID of the token for which underlying tokens were collected</td></tr>
+<tr><td><code>recipient</code></td><td><code>address</code></td><td>The address of the account that received the collected tokens</td></tr>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 owed to the position that was collected</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 owed to the position that was collected</td></tr>
+</tbody></table>
+</div>
+<h2 id="structs"><a class="header" href="#structs">Structs</a></h2>
+<h3 id="mintparams"><a class="header" href="#mintparams">MintParams</a></h3>
+<pre><code class="language-solidity">struct MintParams {
+    address token0;
+    address token1;
+    uint24 fee;
+    int24 tickLower;
+    int24 tickUpper;
+    uint256 amount0Desired;
+    uint256 amount1Desired;
+    uint256 amount0Min;
+    uint256 amount1Min;
+    address recipient;
+    uint256 deadline;
+}
+</code></pre>
+<h3 id="increaseliquidityparams"><a class="header" href="#increaseliquidityparams">IncreaseLiquidityParams</a></h3>
+<pre><code class="language-solidity">struct IncreaseLiquidityParams {
+    uint256 tokenId;
+    uint256 amount0Desired;
+    uint256 amount1Desired;
+    uint256 amount0Min;
+    uint256 amount1Min;
+    uint256 deadline;
+}
+</code></pre>
+<h3 id="decreaseliquidityparams"><a class="header" href="#decreaseliquidityparams">DecreaseLiquidityParams</a></h3>
+<pre><code class="language-solidity">struct DecreaseLiquidityParams {
+    uint256 tokenId;
+    uint128 liquidity;
+    uint256 amount0Min;
+    uint256 amount1Min;
+    uint256 deadline;
+}
+</code></pre>
+<h3 id="collectparams"><a class="header" href="#collectparams">CollectParams</a></h3>
+<pre><code class="language-solidity">struct CollectParams {
+    uint256 tokenId;
+    address recipient;
+    uint128 amount0Max;
+    uint128 amount1Max;
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="iuniswapv3factory"><a class="header" href="#iuniswapv3factory">IUniswapV3Factory</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/interfaces/IUniswapV3Factory.sol">Git Source</a></p>
+<p>The Uniswap V3 Factory facilitates creation of Uniswap V3 pools and control over the protocol fees</p>
+<h2 id="functions-6"><a class="header" href="#functions-6">Functions</a></h2>
+<h3 id="owner"><a class="header" href="#owner">owner</a></h3>
+<p>Returns the current owner of the factory</p>
+<p><em>Can be changed by the current owner via setOwner</em></p>
+<pre><code class="language-solidity">function owner() external view returns (address);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>&lt;none&gt;</code></td><td><code>address</code></td><td>The address of the factory owner</td></tr>
+</tbody></table>
+</div>
+<h3 id="feeamounttickspacing"><a class="header" href="#feeamounttickspacing">feeAmountTickSpacing</a></h3>
+<p>Returns the tick spacing for a given fee amount, if enabled, or 0 if not enabled</p>
+<p><em>A fee amount can never be removed, so this value should be hard coded or cached in the calling context</em></p>
+<pre><code class="language-solidity">function feeAmountTickSpacing(uint24 fee) external view returns (int24);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>fee</code></td><td><code>uint24</code></td><td>The enabled fee, denominated in hundredths of a bip. Returns 0 in case of unenabled fee</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>&lt;none&gt;</code></td><td><code>int24</code></td><td>The tick spacing</td></tr>
+</tbody></table>
+</div>
+<h3 id="getpool"><a class="header" href="#getpool">getPool</a></h3>
+<p>Returns the pool address for a given pair of tokens and a fee, or address 0 if it does not exist</p>
+<p><em>tokenA and tokenB may be passed in either token0/token1 or token1/token0 order</em></p>
+<pre><code class="language-solidity">function getPool(address tokenA, address tokenB, uint24 fee) external view returns (address pool);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenA</code></td><td><code>address</code></td><td>The contract address of either token0 or token1</td></tr>
+<tr><td><code>tokenB</code></td><td><code>address</code></td><td>The contract address of the other token</td></tr>
+<tr><td><code>fee</code></td><td><code>uint24</code></td><td>The fee collected upon every swap in the pool, denominated in hundredths of a bip</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pool</code></td><td><code>address</code></td><td>The pool address</td></tr>
+</tbody></table>
+</div>
+<h3 id="createpool"><a class="header" href="#createpool">createPool</a></h3>
+<p>Creates a pool for the given two tokens and fee</p>
+<p><em>tokenA and tokenB may be passed in either order: token0/token1 or token1/token0. tickSpacing is retrieved
+from the fee. The call will revert if the pool already exists, the fee is invalid, or the token arguments
+are invalid.</em></p>
+<pre><code class="language-solidity">function createPool(address tokenA, address tokenB, uint24 fee) external returns (address pool);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tokenA</code></td><td><code>address</code></td><td>One of the two tokens in the desired pool</td></tr>
+<tr><td><code>tokenB</code></td><td><code>address</code></td><td>The other of the two tokens in the desired pool</td></tr>
+<tr><td><code>fee</code></td><td><code>uint24</code></td><td>The desired fee for the pool</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pool</code></td><td><code>address</code></td><td>The address of the newly created pool</td></tr>
+</tbody></table>
+</div>
+<h3 id="setowner"><a class="header" href="#setowner">setOwner</a></h3>
+<p>Updates the owner of the factory</p>
+<p><em>Must be called by the current owner</em></p>
+<pre><code class="language-solidity">function setOwner(address _owner) external;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>_owner</code></td><td><code>address</code></td><td>The new owner of the factory</td></tr>
+</tbody></table>
+</div>
+<h3 id="enablefeeamount"><a class="header" href="#enablefeeamount">enableFeeAmount</a></h3>
+<p>Enables a fee amount with the given tickSpacing</p>
+<p><em>Fee amounts may never be removed once enabled</em></p>
+<pre><code class="language-solidity">function enableFeeAmount(uint24 fee, int24 tickSpacing) external;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>fee</code></td><td><code>uint24</code></td><td>The fee amount to enable, denominated in hundredths of a bip (i.e. 1e-6)</td></tr>
+<tr><td><code>tickSpacing</code></td><td><code>int24</code></td><td>The spacing between ticks to be enforced for all pools created with the given fee amount</td></tr>
+</tbody></table>
+</div>
+<h2 id="events-2"><a class="header" href="#events-2">Events</a></h2>
+<h3 id="ownerchanged"><a class="header" href="#ownerchanged">OwnerChanged</a></h3>
+<p>Emitted when the owner of the factory is changed</p>
+<pre><code class="language-solidity">event OwnerChanged(address indexed oldOwner, address indexed newOwner);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>oldOwner</code></td><td><code>address</code></td><td>The owner before the owner was changed</td></tr>
+<tr><td><code>newOwner</code></td><td><code>address</code></td><td>The owner after the owner was changed</td></tr>
+</tbody></table>
+</div>
+<h3 id="poolcreated"><a class="header" href="#poolcreated">PoolCreated</a></h3>
+<p>Emitted when a pool is created</p>
+<pre><code class="language-solidity">event PoolCreated(address indexed token0, address indexed token1, uint24 indexed fee, int24 tickSpacing, address pool);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>token0</code></td><td><code>address</code></td><td>The first token of the pool by address sort order</td></tr>
+<tr><td><code>token1</code></td><td><code>address</code></td><td>The second token of the pool by address sort order</td></tr>
+<tr><td><code>fee</code></td><td><code>uint24</code></td><td>The fee collected upon every swap in the pool, denominated in hundredths of a bip</td></tr>
+<tr><td><code>tickSpacing</code></td><td><code>int24</code></td><td>The minimum number of ticks between initialized ticks</td></tr>
+<tr><td><code>pool</code></td><td><code>address</code></td><td>The address of the created pool</td></tr>
+</tbody></table>
+</div>
+<h3 id="feeamountenabled"><a class="header" href="#feeamountenabled">FeeAmountEnabled</a></h3>
+<p>Emitted when a new fee amount is enabled for pool creation via the factory</p>
+<pre><code class="language-solidity">event FeeAmountEnabled(uint24 indexed fee, int24 indexed tickSpacing);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>fee</code></td><td><code>uint24</code></td><td>The enabled fee, denominated in hundredths of a bip</td></tr>
+<tr><td><code>tickSpacing</code></td><td><code>int24</code></td><td>The minimum number of ticks between initialized ticks for pools created with the given fee</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="iuniswapv3mintcallback"><a class="header" href="#iuniswapv3mintcallback">IUniswapV3MintCallback</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/interfaces/IUniswapV3MintCallback.sol">Git Source</a></p>
+<p>Any contract that calls IUniswapV3PoolActions#mint must implement this interface</p>
+<h2 id="functions-7"><a class="header" href="#functions-7">Functions</a></h2>
+<h3 id="uniswapv3mintcallback"><a class="header" href="#uniswapv3mintcallback">uniswapV3MintCallback</a></h3>
+<p>Called to <code>msg.sender</code> after minting liquidity to a position from IUniswapV3Pool#mint.</p>
+<p><em>In the implementation you must pay the pool tokens owed for the minted liquidity.
+The caller of this method must be checked to be a UniswapV3Pool deployed by the canonical UniswapV3Factory.</em></p>
+<pre><code class="language-solidity">function uniswapV3MintCallback(uint256 amount0Owed, uint256 amount1Owed, bytes calldata data) external;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0Owed</code></td><td><code>uint256</code></td><td>The amount of token0 due to the pool for the minted liquidity</td></tr>
+<tr><td><code>amount1Owed</code></td><td><code>uint256</code></td><td>The amount of token1 due to the pool for the minted liquidity</td></tr>
+<tr><td><code>data</code></td><td><code>bytes</code></td><td>Any data passed through by the caller via the IUniswapV3PoolActions#mint call</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="iuniswapv3pool"><a class="header" href="#iuniswapv3pool">IUniswapV3Pool</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/interfaces/IUniswapV3Pool.sol">Git Source</a></p>
+<p><strong>Inherits:</strong>
+<a href="src/interfaces/IUniswapV3Pool.sol//src/interfaces/pool/IUniswapV3PoolImmutables.sol/interface.IUniswapV3PoolImmutables.html">IUniswapV3PoolImmutables</a>, <a href="src/interfaces/IUniswapV3Pool.sol//src/interfaces/pool/IUniswapV3PoolState.sol/interface.IUniswapV3PoolState.html">IUniswapV3PoolState</a>, <a href="src/interfaces/IUniswapV3Pool.sol//src/interfaces/pool/IUniswapV3PoolDerivedState.sol/interface.IUniswapV3PoolDerivedState.html">IUniswapV3PoolDerivedState</a>, <a href="src/interfaces/IUniswapV3Pool.sol//src/interfaces/pool/IUniswapV3PoolActions.sol/interface.IUniswapV3PoolActions.html">IUniswapV3PoolActions</a>, <a href="src/interfaces/IUniswapV3Pool.sol//src/interfaces/pool/IUniswapV3PoolOwnerActions.sol/interface.IUniswapV3PoolOwnerActions.html">IUniswapV3PoolOwnerActions</a>, <a href="src/interfaces/IUniswapV3Pool.sol//src/interfaces/pool/IUniswapV3PoolEvents.sol/interface.IUniswapV3PoolEvents.html">IUniswapV3PoolEvents</a></p>
+<p>A Uniswap pool facilitates swapping and automated market making between any two assets that strictly conform
+to the ERC20 specification</p>
+<p><em>The pool interface is broken up into many smaller pieces</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contents-2"><a class="header" href="#contents-2">Contents</a></h1>
+<ul>
+<li><a href="src/libraries/TickMath.sol/library.TickMath.html">TickMath</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="tickmath"><a class="header" href="#tickmath">TickMath</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/libraries/TickMath.sol">Git Source</a></p>
+<p>Computes sqrt price for ticks of size 1.0001, i.e. sqrt(1.0001^tick) as fixed point Q64.96 numbers. Supports
+prices between 2**-128 and 2**128</p>
+<h2 id="state-variables"><a class="header" href="#state-variables">State Variables</a></h2>
+<h3 id="min_tick"><a class="header" href="#min_tick">MIN_TICK</a></h3>
+<p><em>The minimum tick that may be passed to #getSqrtRatioAtTick computed from log base 1.0001 of 2</em>*-128*</p>
+<pre><code class="language-solidity">int24 internal constant MIN_TICK = -887272;
+</code></pre>
+<h3 id="max_tick"><a class="header" href="#max_tick">MAX_TICK</a></h3>
+<p><em>The maximum tick that may be passed to #getSqrtRatioAtTick computed from log base 1.0001 of 2**128</em></p>
+<pre><code class="language-solidity">int24 internal constant MAX_TICK = -MIN_TICK;
+</code></pre>
+<h3 id="min_sqrt_ratio"><a class="header" href="#min_sqrt_ratio">MIN_SQRT_RATIO</a></h3>
+<p><em>The minimum value that can be returned from #getSqrtRatioAtTick. Equivalent to getSqrtRatioAtTick(MIN_TICK)</em></p>
+<pre><code class="language-solidity">uint160 internal constant MIN_SQRT_RATIO = 4295128739;
+</code></pre>
+<h3 id="max_sqrt_ratio"><a class="header" href="#max_sqrt_ratio">MAX_SQRT_RATIO</a></h3>
+<p><em>The maximum value that can be returned from #getSqrtRatioAtTick. Equivalent to getSqrtRatioAtTick(MAX_TICK)</em></p>
+<pre><code class="language-solidity">uint160 internal constant MAX_SQRT_RATIO = 1461446703485210103287273052203988822378723970342;
+</code></pre>
+<h2 id="functions-8"><a class="header" href="#functions-8">Functions</a></h2>
+<h3 id="getsqrtratioattick"><a class="header" href="#getsqrtratioattick">getSqrtRatioAtTick</a></h3>
+<p>Calculates sqrt(1.0001^tick) * 2^96</p>
+<p><em>Throws if |tick| &gt; max tick</em></p>
+<pre><code class="language-solidity">function getSqrtRatioAtTick(int24 tick) internal pure returns (uint160 sqrtPriceX96);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tick</code></td><td><code>int24</code></td><td>The input tick for the above formula</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>sqrtPriceX96</code></td><td><code>uint160</code></td><td>A Fixed point Q64.96 number representing the sqrt of the ratio of the two assets (token1/token0) at the given tick</td></tr>
+</tbody></table>
+</div>
+<h3 id="gettickatsqrtratio"><a class="header" href="#gettickatsqrtratio">getTickAtSqrtRatio</a></h3>
+<p>Calculates the greatest tick value such that getRatioAtTick(tick) &lt;= ratio</p>
+<p><em>Throws in case sqrtPriceX96 &lt; MIN_SQRT_RATIO, as MIN_SQRT_RATIO is the lowest value getRatioAtTick may
+ever return.</em></p>
+<pre><code class="language-solidity">function getTickAtSqrtRatio(uint160 sqrtPriceX96) internal pure returns (int24 tick);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>sqrtPriceX96</code></td><td><code>uint160</code></td><td>The sqrt ratio for which to compute the tick as a Q64.96</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tick</code></td><td><code>int24</code></td><td>The greatest tick for which the ratio is less than or equal to the input ratio</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="foldcaptivestaking"><a class="header" href="#foldcaptivestaking">FoldCaptiveStaking</a></h1>
+<p><a href="https://github.com/manifoldfinance/fold-staking/blob/92403309d6abaf4e740a6b01f0c2a8497c2fdeb3/src/FoldCaptiveStaking.sol">Git Source</a></p>
+<p><strong>Inherits:</strong>
+Owned</p>
+<p><strong>Author:</strong>
+CopyPaste</p>
+<p>SPDX-License-Identifier: SSPL-1.0
+Interfaces
+Libraries
+contracts</p>
+<p>Staking contract for managing FOLD token liquidity on Uniswap V3</p>
+<h2 id="state-variables-1"><a class="header" href="#state-variables-1">State Variables</a></h2>
+<h3 id="initialized"><a class="header" href="#initialized">initialized</a></h3>
+<pre><code class="language-solidity">bool public initialized;
+</code></pre>
+<h3 id="tick_upper"><a class="header" href="#tick_upper">TICK_UPPER</a></h3>
+<p><em>The max Tick of the position</em></p>
+<pre><code class="language-solidity">int24 public constant TICK_UPPER = TickMath.MAX_TICK;
+</code></pre>
+<h3 id="tick_lower"><a class="header" href="#tick_lower">TICK_LOWER</a></h3>
+<p><em>The lower Tick of the position</em></p>
+<pre><code class="language-solidity">int24 public constant TICK_LOWER = TickMath.MIN_TICK;
+</code></pre>
+<h3 id="positionmanager"><a class="header" href="#positionmanager">positionManager</a></h3>
+<p><em>The Canonical UniswapV3 Position Manager</em></p>
+<pre><code class="language-solidity">INonfungiblePositionManager public immutable positionManager;
+</code></pre>
+<h3 id="pool"><a class="header" href="#pool">POOL</a></h3>
+<p><em>The FOLD &lt;&gt; {WETH, USDC} Liquidity Pool</em></p>
+<pre><code class="language-solidity">IUniswapV3Pool public immutable POOL;
+</code></pre>
+<h3 id="token0-1"><a class="header" href="#token0-1">token0</a></h3>
+<p><em>token0 In terms of the Uniswap Pool</em></p>
+<pre><code class="language-solidity">ERC20 public immutable token0;
+</code></pre>
+<h3 id="token1-1"><a class="header" href="#token1-1">token1</a></h3>
+<p><em>token1 in terms of the Uniswap Pool</em></p>
+<pre><code class="language-solidity">ERC20 public immutable token1;
+</code></pre>
+<h3 id="token_id"><a class="header" href="#token_id">TOKEN_ID</a></h3>
+<p><em>The tokenId of the UniswapV3 position</em></p>
+<pre><code class="language-solidity">uint256 public TOKEN_ID;
+</code></pre>
+<h3 id="liquidityundermanagement"><a class="header" href="#liquidityundermanagement">liquidityUnderManagement</a></h3>
+<p><em>Used for all rewards related tracking</em></p>
+<pre><code class="language-solidity">uint256 public liquidityUnderManagement;
+</code></pre>
+<h3 id="rewardsperliquidity"><a class="header" href="#rewardsperliquidity">rewardsPerLiquidity</a></h3>
+<p><em>Used to keep track of rewards given per share</em></p>
+<pre><code class="language-solidity">uint256 public rewardsPerLiquidity;
+</code></pre>
+<h3 id="token0feesperliquidity"><a class="header" href="#token0feesperliquidity">token0FeesPerLiquidity</a></h3>
+<p><em>For keeping track of position fees</em></p>
+<pre><code class="language-solidity">uint256 public token0FeesPerLiquidity;
+</code></pre>
+<h3 id="token1feesperliquidity"><a class="header" href="#token1feesperliquidity">token1FeesPerLiquidity</a></h3>
+<p><em>For keeping track of positions fees</em></p>
+<pre><code class="language-solidity">uint256 public token1FeesPerLiquidity;
+</code></pre>
+<h3 id="depositcap"><a class="header" href="#depositcap">depositCap</a></h3>
+<p><em>The cap on deposits in the pool in liquidity, set to 0 if no cap</em></p>
+<pre><code class="language-solidity">uint256 public depositCap;
+</code></pre>
+<h3 id="balances"><a class="header" href="#balances">balances</a></h3>
+<pre><code class="language-solidity">mapping(address user =&gt; UserInfo info) public balances;
+</code></pre>
+<h3 id="weth9"><a class="header" href="#weth9">WETH9</a></h3>
+<p><em>The Canonical WETH address</em></p>
+<pre><code class="language-solidity">WETH public immutable WETH9;
+</code></pre>
+<h3 id="fold"><a class="header" href="#fold">FOLD</a></h3>
+<pre><code class="language-solidity">ERC20 public immutable FOLD;
+</code></pre>
+<h2 id="functions-9"><a class="header" href="#functions-9">Functions</a></h2>
+<h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<pre><code class="language-solidity">constructor(address _positionManager, address _pool, address _weth, address _fold);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>_positionManager</code></td><td><code>address</code></td><td>The Canonical UniswapV3 PositionManager</td></tr>
+<tr><td><code>_pool</code></td><td><code>address</code></td><td>The FOLD Pool to Reward</td></tr>
+<tr><td><code>_weth</code></td><td><code>address</code></td><td>The address of WETH on the deployed chain</td></tr>
+<tr><td><code>_fold</code></td><td><code>address</code></td><td>The address of Fold on the deployed chain</td></tr>
+</tbody></table>
+</div>
+<h3 id="initialize-2"><a class="header" href="#initialize-2">initialize</a></h3>
+<p>Initialize the contract by minting a small initial liquidity position</p>
+<pre><code class="language-solidity">function initialize() public onlyOwner;
+</code></pre>
+<h3 id="isinitialized"><a class="header" href="#isinitialized">isInitialized</a></h3>
+<pre><code class="language-solidity">modifier isInitialized();
+</code></pre>
+<h3 id="depositrewards"><a class="header" href="#depositrewards">depositRewards</a></h3>
+<p>Allows anyone to add funds to the contract, split among all depositors</p>
+<pre><code class="language-solidity">function depositRewards() public payable isInitialized;
+</code></pre>
+<h3 id="receive"><a class="header" href="#receive">receive</a></h3>
+<pre><code class="language-solidity">receive() external payable;
+</code></pre>
+<h3 id="deposit"><a class="header" href="#deposit">deposit</a></h3>
+<p>Allows a user to deposit liquidity into the pool</p>
+<pre><code class="language-solidity">function deposit(uint256 amount0, uint256 amount1, uint256 slippage) external isInitialized;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>amount0</code></td><td><code>uint256</code></td><td>The amount of token0 to deposit</td></tr>
+<tr><td><code>amount1</code></td><td><code>uint256</code></td><td>The amount of token1 to deposit</td></tr>
+<tr><td><code>slippage</code></td><td><code>uint256</code></td><td>Slippage on deposit out of 1e18</td></tr>
+</tbody></table>
+</div>
+<h3 id="compound"><a class="header" href="#compound">compound</a></h3>
+<p>Compounds User Earned Fees back into their position</p>
+<pre><code class="language-solidity">function compound() public isInitialized;
+</code></pre>
+<h3 id="collectfees"><a class="header" href="#collectfees">collectFees</a></h3>
+<p>User-specific function to collect fees on the singular position</p>
+<pre><code class="language-solidity">function collectFees() public isInitialized;
+</code></pre>
+<h3 id="collectrewards"><a class="header" href="#collectrewards">collectRewards</a></h3>
+<p>User-specific Rewards for Protocol Rewards</p>
+<pre><code class="language-solidity">function collectRewards() public isInitialized;
+</code></pre>
+<h3 id="withdraw"><a class="header" href="#withdraw">withdraw</a></h3>
+<p>Withdraws liquidity from the pool</p>
+<pre><code class="language-solidity">function withdraw(uint128 liquidity) external isInitialized;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The amount of liquidity to withdraw</td></tr>
+</tbody></table>
+</div>
+<h3 id="collectpositionfees"><a class="header" href="#collectpositionfees">collectPositionFees</a></h3>
+<p>Collects fees on the underling UniswapV3 Position</p>
+<pre><code class="language-solidity">function collectPositionFees() internal;
+</code></pre>
+<h3 id="setdepositcap"><a class="header" href="#setdepositcap">setDepositCap</a></h3>
+<pre><code class="language-solidity">function setDepositCap(uint256 _newCap) public onlyOwner;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>_newCap</code></td><td><code>uint256</code></td><td>The new deposit cap, measured in liquidity</td></tr>
+</tbody></table>
+</div>
+<h3 id="claiminsurance"><a class="header" href="#claiminsurance">claimInsurance</a></h3>
+<p>Allows the owner to claim insurance in case of relay outage</p>
+<pre><code class="language-solidity">function claimInsurance(uint128 liquidity) external onlyOwner;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>liquidity</code></td><td><code>uint128</code></td><td>The amount of liquidity to claim</td></tr>
+</tbody></table>
+</div>
+<h2 id="events-3"><a class="header" href="#events-3">Events</a></h2>
+<h3 id="initialized-1"><a class="header" href="#initialized-1">Initialized</a></h3>
+<pre><code class="language-solidity">event Initialized();
+</code></pre>
+<h3 id="deposit-1"><a class="header" href="#deposit-1">Deposit</a></h3>
+<pre><code class="language-solidity">event Deposit(address indexed user, uint256 amount0, uint256 amount1);
+</code></pre>
+<h3 id="withdraw-1"><a class="header" href="#withdraw-1">Withdraw</a></h3>
+<pre><code class="language-solidity">event Withdraw(address indexed user, uint128 liquidity);
+</code></pre>
+<h3 id="rewardsdeposited"><a class="header" href="#rewardsdeposited">RewardsDeposited</a></h3>
+<pre><code class="language-solidity">event RewardsDeposited(uint256 amount);
+</code></pre>
+<h3 id="feescollected"><a class="header" href="#feescollected">FeesCollected</a></h3>
+<pre><code class="language-solidity">event FeesCollected(address indexed user, uint256 fee0Owed, uint256 fee1Owed);
+</code></pre>
+<h3 id="rewardscollected"><a class="header" href="#rewardscollected">RewardsCollected</a></h3>
+<pre><code class="language-solidity">event RewardsCollected(address indexed user, uint256 rewardsOwed);
+</code></pre>
+<h3 id="compounded"><a class="header" href="#compounded">Compounded</a></h3>
+<pre><code class="language-solidity">event Compounded(address indexed user, uint128 liquidity, uint256 fee0Owed, uint256 fee1Owed);
+</code></pre>
+<h3 id="insuranceclaimed"><a class="header" href="#insuranceclaimed">InsuranceClaimed</a></h3>
+<pre><code class="language-solidity">event InsuranceClaimed(address indexed owner, uint256 amount0, uint256 amount1);
+</code></pre>
+<h2 id="errors"><a class="header" href="#errors">Errors</a></h2>
+<h3 id="zeroaddress"><a class="header" href="#zeroaddress">ZeroAddress</a></h3>
+<p>Custom Errors</p>
+<pre><code class="language-solidity">error ZeroAddress();
+</code></pre>
+<h3 id="alreadyinitialized"><a class="header" href="#alreadyinitialized">AlreadyInitialized</a></h3>
+<pre><code class="language-solidity">error AlreadyInitialized();
+</code></pre>
+<h3 id="notinitialized"><a class="header" href="#notinitialized">NotInitialized</a></h3>
+<pre><code class="language-solidity">error NotInitialized();
+</code></pre>
+<h3 id="zeroliquidity"><a class="header" href="#zeroliquidity">ZeroLiquidity</a></h3>
+<pre><code class="language-solidity">error ZeroLiquidity();
+</code></pre>
+<h3 id="withdrawfailed"><a class="header" href="#withdrawfailed">WithdrawFailed</a></h3>
+<pre><code class="language-solidity">error WithdrawFailed();
+</code></pre>
+<h3 id="withdrawprorata"><a class="header" href="#withdrawprorata">WithdrawProRata</a></h3>
+<pre><code class="language-solidity">error WithdrawProRata();
+</code></pre>
+<h3 id="depositcapreached"><a class="header" href="#depositcapreached">DepositCapReached</a></h3>
+<pre><code class="language-solidity">error DepositCapReached();
+</code></pre>
+<h2 id="structs-1"><a class="header" href="#structs-1">Structs</a></h2>
+<h3 id="userinfo"><a class="header" href="#userinfo">UserInfo</a></h3>
+<pre><code class="language-solidity">struct UserInfo {
+    uint128 amount;
+    uint128 rewardDebt;
+    uint128 token0FeeDebt;
+    uint128 token1FeeDebt;
+}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="solidity.min.js"></script>
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+    </div>
+    </body>
+</html>
