@@ -1,4 +1,7 @@
-# Fold Captive Staking ![Foundry](https://github.com/manifoldfinance/fold-staking/actions/workflows/test.yml/badge.svg?branch=master)
+# Fold Captive Staking
+
+> [!NOTE]
+> For Developer Reference
 
 ## Introduction
 
