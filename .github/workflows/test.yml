@@ -1,9 +1,20 @@
-name: test
+name: Foundry Tests
 
-on: push
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, trunk]
+    paths:
+      - "**.sol"
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
 
 env:
   FOUNDRY_PROFILE: ci
+  RPC_MAINNET: ${{ secrets.ETH_RPC_URL }}
+  MULTISIG_SAFE: ${{ secrets.MULTISIG_SAFE }}
+  ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+  ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
 
 jobs:
   check:
@@ -14,8 +25,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -25,6 +34,11 @@ jobs:
       - name: Run Forge build
         run: |
           forge --version
+          forge install
+        id: install
+        
+      - name: Run Forge build
+        run: |
           forge build --sizes
         id: build
 
