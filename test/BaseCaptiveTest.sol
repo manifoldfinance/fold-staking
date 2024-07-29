@@ -25,9 +25,8 @@ contract BaseCaptiveTest is Test {
     address public User02 = address(0x2);
 
     function setUp() public {
-        uint256 mainnetFork = vm.createFork("https://eth.llamarpc.com");
+        uint256 mainnetFork = vm.createFork("https://eth.merkle.io", 20185705);
         vm.selectFork(mainnetFork);
-        vm.rollFork(20185705);
 
         address self = address(this);
 
