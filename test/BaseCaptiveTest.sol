@@ -11,7 +11,8 @@ contract BaseCaptiveTest is Test {
     error NotInitialized();
     error ZeroLiquidity();
     error WithdrawFailed();
-    error WithdrawProRata();
+    error DepositAmountBelowMinimum();
+    error WithdrawalCooldownPeriodNotMet();
 
     FoldCaptiveStaking public foldCaptiveStaking;
 

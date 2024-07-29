@@ -40,8 +40,9 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     error NotInitialized();
     error ZeroLiquidity();
     error WithdrawFailed();
-    error WithdrawProRata();
     error DepositCapReached();
+    error DepositAmountBelowMinimum();
+    error WithdrawalCooldownPeriodNotMet();
 
     /// @param _positionManager The Canonical UniswapV3 PositionManager
     /// @param _pool The FOLD Pool to Reward
@@ -138,6 +139,13 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     /// @dev The cap on deposits in the pool in liquidity, set to 0 if no cap
     uint256 public depositCap;
 
+    /// @dev Min deposit amount for Fold / Eth
+    uint256 public constant MINIMUM_DEPOSIT = 1 ether;
+    /// @dev Min lockup period
+    uint256 public constant COOLDOWN_PERIOD = 14 days;
+
+    mapping(address => uint256) public depositTimeStamp;
+
     /*//////////////////////////////////////////////////////////////
                                   CHEF
     //////////////////////////////////////////////////////////////*/
@@ -175,6 +183,8 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     /// @param amount1 The amount of token1 to deposit
     /// @param slippage Slippage on deposit out of 1e18
     function deposit(uint256 amount0, uint256 amount1, uint256 slippage) external isInitialized {
+        if (amount0 < MINIMUM_DEPOSIT && amount1 < MINIMUM_DEPOSIT) revert DepositAmountBelowMinimum();
+
         collectFees();
         collectRewards();
 
@@ -206,6 +216,8 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         if (liquidityUnderManagement > depositCap && depositCap != 0) {
             revert DepositCapReached();
         }
+
+        depositTimeStamp[msg.sender] = block.timestamp;
 
         emit Deposit(msg.sender, amount0, amount1);
     }
@@ -276,12 +288,10 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     /// @notice Withdraws liquidity from the pool
     /// @param liquidity The amount of liquidity to withdraw
     function withdraw(uint128 liquidity) external isInitialized {
+        if (block.timestamp < depositTimeStamp[msg.sender] + COOLDOWN_PERIOD) revert WithdrawalCooldownPeriodNotMet();
+
         collectFees();
         collectRewards();
-
-        if (liquidity > balances[msg.sender].amount / 2) {
-            revert WithdrawProRata();
-        }
 
         balances[msg.sender].amount -= liquidity;
         liquidityUnderManagement -= uint256(liquidity);
@@ -348,10 +358,6 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     function claimInsurance(uint128 liquidity) external onlyOwner {
         collectPositionFees();
         collectRewards();
-
-        if (liquidity > liquidityUnderManagement / 2) {
-            revert WithdrawProRata();
-        }
 
         liquidityUnderManagement -= uint256(liquidity);
 
