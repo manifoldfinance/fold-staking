@@ -6,6 +6,7 @@ import "test/interfaces/ISwapRouter.sol";
 contract UnitTests is BaseCaptiveTest {
     ISwapRouter public router = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
+    /// @dev Ensure that balances and state variables are updated correctly.
     function testAddLiquidity() public {
         fold.transfer(User01, 1_000 ether);
 
@@ -26,6 +27,7 @@ contract UnitTests is BaseCaptiveTest {
         assertEq(token1FeeDebt, 0);
     }
 
+    /// @dev Ensure that balances and state variables are updated correctly.
     function testRemoveLiquidity() public {
         testAddLiquidity();
 
@@ -49,6 +51,7 @@ contract UnitTests is BaseCaptiveTest {
         assertEq(amount, liq / 4);
     }
 
+    /// @dev Ensure fees are accrued correctly and distributed proportionately.
     function testFeesAccrue() public {
         testAddLiquidity();
 
@@ -97,6 +100,7 @@ contract UnitTests is BaseCaptiveTest {
         assertGt(foldCaptiveStaking.token1FeesPerLiquidity(), 0);
     }
 
+    /// @dev Ensure fees are compounded correctly and state variables are updated.
     function testCanCompoundFees() public {
         testAddLiquidity();
 
@@ -144,6 +148,7 @@ contract UnitTests is BaseCaptiveTest {
         assertGt(newAmount, amount);
     }
 
+    /// @dev Ensure new users can't steal fees accrued by others.
     function testNewUsersDontStealFees() public {
         testFeesAccrue();
 
@@ -191,6 +196,7 @@ contract UnitTests is BaseCaptiveTest {
         stakingTwo.depositRewards();
     }
 
+    /// @dev Ensure rewards are added and collected correctly.
     function testCanAddRewards() public {
         testAddLiquidity();
 
@@ -216,6 +222,7 @@ contract UnitTests is BaseCaptiveTest {
         foldCaptiveStaking.withdraw(liq / 3);
     }
 
+    /// @dev Ensure the owner can claim insurance correctly.
     function testClaimInsurance() public {
         testAddLiquidity();
 
@@ -235,6 +242,7 @@ contract UnitTests is BaseCaptiveTest {
         vm.stopPrank();
     }
 
+    /// @dev Ensure pro-rata withdrawals are handled correctly
     function testProRataWithdrawals() public {
         testAddLiquidity();
 
@@ -250,6 +258,7 @@ contract UnitTests is BaseCaptiveTest {
         assertEq(amount, liq / 2);
     }
 
+    /// @dev Ensure zero deposits are handled correctly and revert as expected.
     function testZeroDeposit() public {
         vm.expectRevert();
         foldCaptiveStaking.deposit(0, 0, 0);
@@ -257,6 +266,7 @@ contract UnitTests is BaseCaptiveTest {
         assertEq(amount, 0);
     }
 
+    /// @dev Ensure the contract is protected against reentrancy attacks.
     function testReentrancy() public {
         testAddLiquidity();
 
@@ -267,6 +277,81 @@ contract UnitTests is BaseCaptiveTest {
 
         vm.expectRevert();
         attack.attack();
+    }
+
+    /// @dev Deposit Cap Enforcement: Test to ensure the deposit cap is respected.
+    function testDepositCap() public {
+        uint256 cap = 100 ether;
+        foldCaptiveStaking.setDepositCap(cap);
+
+        fold.transfer(User01, 2000 ether);
+
+        vm.deal(User01, 2000 ether);
+        vm.startPrank(User01);
+
+        weth.deposit{value: 2000 ether}();
+        weth.approve(address(foldCaptiveStaking), type(uint256).max);
+        fold.approve(address(foldCaptiveStaking), type(uint256).max);
+
+        // First deposit should succeed
+        foldCaptiveStaking.deposit(1_000 ether, 1_000 ether, 0);
+
+        // Second deposit should revert due to cap
+        vm.expectRevert(DepositCapReached.selector);
+        foldCaptiveStaking.deposit(1_000 ether, 1_000 ether, 0);
+
+        vm.stopPrank();
+    }
+
+    /// @dev Multiple Users: Test simultaneous deposits and withdrawals by multiple users.
+    function testMultipleUsersDepositWithdraw() public {
+        // User 1 deposits
+        fold.transfer(User01, 1_000 ether);
+        vm.deal(User01, 1_000 ether);
+        vm.startPrank(User01);
+
+        weth.deposit{value: 1_000 ether}();
+        weth.approve(address(foldCaptiveStaking), type(uint256).max);
+        fold.approve(address(foldCaptiveStaking), type(uint256).max);
+
+        foldCaptiveStaking.deposit(1_000 ether, 1_000 ether, 0);
+
+        vm.stopPrank();
+
+        // User 2 deposits
+        fold.transfer(User02, 500 ether);
+        vm.deal(User02, 500 ether);
+        vm.startPrank(User02);
+
+        weth.deposit{value: 500 ether}();
+        weth.approve(address(foldCaptiveStaking), type(uint256).max);
+        fold.approve(address(foldCaptiveStaking), type(uint256).max);
+
+        foldCaptiveStaking.deposit(500 ether, 500 ether, 0);
+
+        vm.stopPrank();
+
+        // User 1 withdraws
+        vm.startPrank(User01);
+
+        (uint128 liq,,,) = foldCaptiveStaking.balances(User01);
+        foldCaptiveStaking.withdraw(liq / 2);
+
+        (uint128 amount,,,) = foldCaptiveStaking.balances(User01);
+        assertEq(amount, liq / 2);
+
+        vm.stopPrank();
+
+        // User 2 withdraws
+        vm.startPrank(User02);
+
+        (liq,,,) = foldCaptiveStaking.balances(User02);
+        foldCaptiveStaking.withdraw(liq / 2);
+
+        (amount,,,) = foldCaptiveStaking.balances(User02);
+        assertEq(amount, liq / 2);
+
+        vm.stopPrank();
     }
 }
 
