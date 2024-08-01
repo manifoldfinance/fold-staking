@@ -12,6 +12,7 @@ contract BaseCaptiveTest is Test {
     error ZeroLiquidity();
     error WithdrawFailed();
     error WithdrawProRata();
+    error DepositCapReached();
 
     FoldCaptiveStaking public foldCaptiveStaking;
 
