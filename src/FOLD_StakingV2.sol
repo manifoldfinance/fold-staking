@@ -1,5 +1,14 @@
 /// SPDX-License-Identifier: SSPL-1.0
-pragma solidity ^0.8.26;
+pragma solidity 0.8.26;
+
+// Authorization and Authentication
+
+import {Owned} from "lib/solmate/src/auth/Owned.sol";
+
+/// contracts
+import {WETH} from "lib/solady/src/tokens/WETH.sol";
+import {ERC20} from "lib/solady/src/tokens/ERC20.sol";
+
 
 /// Interfaces
 import {INonfungiblePositionManager} from "./interfaces/INonfungiblePositionManager.sol";
@@ -10,15 +19,14 @@ import {IUniswapV3Pool} from "./interfaces/IUniswapV3Pool.sol";
 /// Libraries
 import {TickMath} from "./libraries/TickMath.sol";
 
-/// contracts
-import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
-import {Owned} from "lib/solmate/src/auth/Owned.sol";
-import {WETH} from "lib/solmate/src/tokens/WETH.sol";
+
+
+
 
 /// @author CopyPaste
-/// @title FoldCaptiveStaking
+/// @title FoldCaptiveStakingV2
 /// @notice Staking contract for managing FOLD token liquidity on Uniswap V3
-contract FoldCaptiveStaking is Owned(msg.sender) {
+contract FoldCaptiveStakingV2 is Owned(msg.sender) {
     /*//////////////////////////////////////////////////////////////
                              INITIALIZATION
     //////////////////////////////////////////////////////////////*/
