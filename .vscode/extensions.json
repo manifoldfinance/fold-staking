@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "trailofbits.sarif-explorer",
+        "usernamehw.errorlens",
+        "alefragnani.separators",
+        "nomicfoundation.hardhat-solidity",
+        "tintinweb.solidity-visual-auditor"
+    ]
+}

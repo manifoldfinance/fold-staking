@@ -1,17 +1,27 @@
 name: test
 
-on: push
+on:
+  push:
+    paths:
+      - "**.sol"
+      - "**.toml"
+      - "**.json"
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  # On-demand
+  workflow_dispatch: {}
+  
 
-env:
-  FOUNDRY_PROFILE: ci
 
 jobs:
   check:
     strategy:
       fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
 
     name: Foundry project
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,3 +42,78 @@ jobs:
         run: |
           forge test -vvv
         id: test
+
+      - name: Run Forge snapshot
+        run: forge snapshot
+        id: snapshot
+
+      - name: Run Forge coverage
+        run: forge coverage --report lcov
+        id: coverage
+
+      - name: Run Gas report
+        run: forge test --gas-report --isolate
+        id: gas-report
+
+      - name: Run Forge Snapshot Diff
+        run: forge snapshot --diff
+        id: snapshot_diff
+
+      - name: Run Slither
+        uses: crytic/slither-action@v0.4.0
+        id: slither
+        with:
+          slither-args: --compile-force-framework foundry --exclude-dependencies --checklist
+          sarif: results.sarif
+          fail-on: none
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.slither.outputs.sarif }}
+
+  fork:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+
+    name: Foundry project
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge install
+          forge build --sizes
+        id: build
+
+      - name: Run Forge tests
+        run: |
+          forge test -vvv --rpc-url phalcon
+        id: test
+
+      - name: Run Forge snapshot
+        run: forge snapshot --rpc-url phalcon
+        id: snapshot
+
+      - name: Run Forge coverage
+        run: forge coverage --report lcov --rpc-url phalcon
+        id: coverage
+
+      - name: Run Gas report
+        run: forge test --gas-report --isolate --rpc-url phalcon
+        id: gas-report
+
+      - name: Run Forge Snapshot Diff
+        run: forge snapshot --diff --rpc-url phalcon
+        id: snapshot_diff

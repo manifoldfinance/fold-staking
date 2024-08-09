@@ -172,3 +172,7 @@ optimizerSteps = 'jmul[jul] VcTOcul jmul'
 out = "utils/JsonBindings.sol"
 include = []
 exclude = []
+
+
+[rpc_endpoints]
+phalcon = "https://rpc.phalcon.blocksec.com/rpc_d03456ef902047418a8bb566ef81c095"
