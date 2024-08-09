@@ -1,0 +1,7 @@
+UnitTests:testAddLiquidity() (gas: 347004)
+UnitTests:testCanAddRewards() (gas: 522056)
+UnitTests:testCanCompoundFees() (gas: 899427)
+UnitTests:testCannotCallbeforeInit() (gas: 2265365)
+UnitTests:testFeesAccrue() (gas: 884410)
+UnitTests:testNewUsersDontStealFees() (gas: 1145644)
+UnitTests:testRemoveLiquidity() (gas: 575956)

@@ -1,5 +1,5 @@
 /// SPDX-License-Identifier: SSPL-1.-0
-pragma solidity 0.8.25;
+pragma solidity ^0.8.26;
 
 import "src/FoldCaptiveStaking.sol";
 import {Test} from "forge-std/Test.sol";
@@ -11,6 +11,8 @@ contract BaseCaptiveTest is Test {
     error NotInitialized();
     error ZeroLiquidity();
     error WithdrawFailed();
+    error DepositAmountBelowMinimum();
+    error WithdrawalCooldownPeriodNotMet();
     error WithdrawProRata();
     error DepositCapReached();
 

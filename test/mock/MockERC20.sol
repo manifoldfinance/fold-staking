@@ -1,5 +1,5 @@
 /// SPDX-License-Identifier: SSPL-1.-0
-pragma solidity 0.8.25;
+pragma solidity ^0.8.26;
 
 import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
 
