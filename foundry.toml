@@ -1,5 +1,5 @@
 [profile.default]
-solc_version = '0.8.25'
+solc_version = '0.8.26'
 src = 'src'
 out = 'out'
 libs = ['lib']
@@ -160,7 +160,7 @@ yul = true
 stackAllocation = true
 # ACHTUNG! Setting this is extremely dangerous
 # {@see {@link https://soliditylang.org/blog/2023/07/19/full-inliner-non-expression-split-argument-evaluation-order-bug/} }
-# optimizerSteps = 'u:'
+optimizerSteps = 'jmul[jul] VcTOcul jmul'
 
 # [default.model_checker]
 # contracts = { '/path/to/project/src/Contract.sol' = [ 'Contract' ] }
