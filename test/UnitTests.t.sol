@@ -51,6 +51,42 @@ contract UnitTests is BaseCaptiveTest {
         assertEq(amount, liq / 4);
     }
 
+    /// @dev Ensure that owed fees are returned correctly.
+    function testOwedFees() public {
+        testAddLiquidity();
+        uint256 owedReards = foldCaptiveStaking.owedRewards();
+        (uint256 amount, uint256 rewardDebt, , ) = foldCaptiveStaking.balances(
+            User01
+        );
+        uint256 rewardOwedCheck = ((foldCaptiveStaking.rewardsPerLiquidity() -
+            rewardDebt) * amount) /
+            foldCaptiveStaking.liquidityUnderManagement();
+
+        assertEq(rewardOwedCheck, owedReards);
+    }
+
+    /// @dev Ensure that owed fees are returned correctly.
+    function testOwedRewards() public {
+        testAddLiquidity();
+        (uint256 fee0Owed, uint256 fee1Owed) = foldCaptiveStaking.owedFees();
+        (
+            uint256 amount,
+            ,
+            uint256 token0FeeDebt,
+            uint256 token1FeeDebt
+        ) = foldCaptiveStaking.balances(User01);
+        uint256 fee0OwedCheck = ((foldCaptiveStaking.token0FeesPerLiquidity() -
+            token0FeeDebt) * amount) /
+            foldCaptiveStaking.liquidityUnderManagement();
+
+        uint256 fee1OwedCheck = ((foldCaptiveStaking.token1FeesPerLiquidity() -
+            token1FeeDebt) * amount) /
+            foldCaptiveStaking.liquidityUnderManagement();
+
+        assertEq(fee0OwedCheck, fee0Owed);
+        assertEq(fee1OwedCheck, fee1Owed);
+    }
+
     /// @dev Ensure fees are accrued correctly and distributed proportionately.
     function testFeesAccrue() public {
         testAddLiquidity();
