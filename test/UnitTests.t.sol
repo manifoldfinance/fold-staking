@@ -4,8 +4,7 @@ import "test/BaseCaptiveTest.sol";
 import "test/interfaces/ISwapRouter.sol";
 
 contract UnitTests is BaseCaptiveTest {
-    ISwapRouter public router =
-        ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
+    ISwapRouter public router = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
     /// @dev Ensure that balances and state variables are updated correctly.
     function testAddLiquidity() public {
@@ -19,12 +18,8 @@ contract UnitTests is BaseCaptiveTest {
         fold.approve(address(foldCaptiveStaking), type(uint256).max);
 
         foldCaptiveStaking.deposit(1_000 ether, 1_000 ether, 0);
-        (
-            uint128 amount,
-            uint128 rewardDebt,
-            uint128 token0FeeDebt,
-            uint128 token1FeeDebt
-        ) = foldCaptiveStaking.balances(User01);
+        (uint128 amount, uint128 rewardDebt, uint128 token0FeeDebt, uint128 token1FeeDebt) =
+            foldCaptiveStaking.balances(User01);
 
         assertGt(amount, 0);
         assertEq(rewardDebt, 0);
@@ -36,18 +31,13 @@ contract UnitTests is BaseCaptiveTest {
     function testRemoveLiquidity() public {
         testAddLiquidity();
 
-        (
-            uint128 amount,
-            uint128 rewardDebt,
-            uint128 token0FeeDebt,
-            uint128 token1FeeDebt
-        ) = foldCaptiveStaking.balances(User01);
+        (uint128 amount, uint128 rewardDebt, uint128 token0FeeDebt, uint128 token1FeeDebt) =
+            foldCaptiveStaking.balances(User01);
 
-        (uint128 liq, , , ) = foldCaptiveStaking.balances(User01);
+        (uint128 liq,,,) = foldCaptiveStaking.balances(User01);
         foldCaptiveStaking.withdraw(liq / 2);
 
-        (amount, rewardDebt, token0FeeDebt, token1FeeDebt) = foldCaptiveStaking
-            .balances(User01);
+        (amount, rewardDebt, token0FeeDebt, token1FeeDebt) = foldCaptiveStaking.balances(User01);
 
         assertEq(amount, liq / 2);
         assertEq(rewardDebt, 0);
@@ -56,45 +46,9 @@ contract UnitTests is BaseCaptiveTest {
 
         foldCaptiveStaking.withdraw(liq / 4);
 
-        (amount, , , ) = foldCaptiveStaking.balances(User01);
+        (amount,,,) = foldCaptiveStaking.balances(User01);
 
         assertEq(amount, liq / 4);
-    }
-
-    /// @dev Ensure that owed fees are returned correctly.
-    function testOwedFees() public {
-        testAddLiquidity();
-        uint256 owedReards = foldCaptiveStaking.owedRewards();
-        (uint256 amount, uint256 rewardDebt, , ) = foldCaptiveStaking.balances(
-            User01
-        );
-        uint256 rewardOwedCheck = ((foldCaptiveStaking.rewardsPerLiquidity() -
-            rewardDebt) * amount) /
-            foldCaptiveStaking.liquidityUnderManagement();
-
-        assertEq(rewardOwedCheck, owedReards);
-    }
-
-    /// @dev Ensure that owed fees are returned correctly.
-    function testOwedRewards() public {
-        testAddLiquidity();
-        (uint256 fee0Owed, uint256 fee1Owed) = foldCaptiveStaking.owedFees();
-        (
-            uint256 amount,
-            ,
-            uint256 token0FeeDebt,
-            uint256 token1FeeDebt
-        ) = foldCaptiveStaking.balances(User01);
-        uint256 fee0OwedCheck = ((foldCaptiveStaking.token0FeesPerLiquidity() -
-            token0FeeDebt) * amount) /
-            foldCaptiveStaking.liquidityUnderManagement();
-
-        uint256 fee1OwedCheck = ((foldCaptiveStaking.token1FeesPerLiquidity() -
-            token1FeeDebt) * amount) /
-            foldCaptiveStaking.liquidityUnderManagement();
-
-        assertEq(fee0OwedCheck, fee0Owed);
-        assertEq(fee1OwedCheck, fee1Owed);
     }
 
     /// @dev Ensure fees are accrued correctly and distributed proportionately.
@@ -105,17 +59,16 @@ contract UnitTests is BaseCaptiveTest {
         weth.deposit{value: 10 ether}();
         weth.approve(address(router), type(uint256).max);
 
-        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
-            .ExactInputSingleParams({
-                tokenIn: address(weth),
-                tokenOut: address(fold),
-                fee: 10_000,
-                recipient: msg.sender,
-                deadline: block.timestamp,
-                amountIn: 10 ether,
-                amountOutMinimum: 0,
-                sqrtPriceLimitX96: 0
-            });
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+            tokenIn: address(weth),
+            tokenOut: address(fold),
+            fee: 10_000,
+            recipient: msg.sender,
+            deadline: block.timestamp,
+            amountIn: 10 ether,
+            amountOutMinimum: 0,
+            sqrtPriceLimitX96: 0
+        });
 
         // The call to `exactInputSingle` executes the swap.
         uint256 amountOut = router.exactInputSingle(params);
@@ -155,17 +108,16 @@ contract UnitTests is BaseCaptiveTest {
         weth.deposit{value: 10 ether}();
         weth.approve(address(router), type(uint256).max);
 
-        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
-            .ExactInputSingleParams({
-                tokenIn: address(weth),
-                tokenOut: address(fold),
-                fee: 10_000,
-                recipient: msg.sender,
-                deadline: block.timestamp,
-                amountIn: 10 ether,
-                amountOutMinimum: 0,
-                sqrtPriceLimitX96: 0
-            });
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+            tokenIn: address(weth),
+            tokenOut: address(fold),
+            fee: 10_000,
+            recipient: msg.sender,
+            deadline: block.timestamp,
+            amountIn: 10 ether,
+            amountOutMinimum: 0,
+            sqrtPriceLimitX96: 0
+        });
 
         // The call to `exactInputSingle` executes the swap.
         uint256 amountOut = router.exactInputSingle(params);
@@ -187,11 +139,11 @@ contract UnitTests is BaseCaptiveTest {
         // The call to `exactInputSingle` executes the swap.
         amountOut = router.exactInputSingle(params);
 
-        (uint128 amount, , , ) = foldCaptiveStaking.balances(User01);
+        (uint128 amount,,,) = foldCaptiveStaking.balances(User01);
 
         foldCaptiveStaking.compound();
 
-        (uint128 newAmount, , , ) = foldCaptiveStaking.balances(User01);
+        (uint128 newAmount,,,) = foldCaptiveStaking.balances(User01);
 
         assertGt(newAmount, amount);
     }
@@ -215,20 +167,15 @@ contract UnitTests is BaseCaptiveTest {
 
         foldCaptiveStaking.deposit(10 ether, 10 ether, 0);
 
-        (, , uint128 token0FeeDebt, uint128 token1FeeDebt) = foldCaptiveStaking
-            .balances(User02);
+        (,, uint128 token0FeeDebt, uint128 token1FeeDebt) = foldCaptiveStaking.balances(User02);
 
         assertEq(token0FeeDebt, foldCaptiveStaking.token0FeesPerLiquidity());
         assertEq(token1FeeDebt, foldCaptiveStaking.token1FeesPerLiquidity());
     }
 
     function testCannotCallbeforeInit() public {
-        FoldCaptiveStaking stakingTwo = new FoldCaptiveStaking(
-            address(positionManager),
-            address(pool),
-            address(weth),
-            address(fold)
-        );
+        FoldCaptiveStaking stakingTwo =
+            new FoldCaptiveStaking(address(positionManager), address(pool), address(weth), address(fold));
 
         vm.expectRevert(NotInitialized.selector);
         stakingTwo.deposit(0, 0, 0);
@@ -256,25 +203,22 @@ contract UnitTests is BaseCaptiveTest {
         vm.deal(User01, 1000 ether);
 
         uint256 initialGlobalRewards = foldCaptiveStaking.rewardsPerLiquidity();
-        (, uint256 rewardDebt, , ) = foldCaptiveStaking.balances(User01);
+        (, uint256 rewardDebt,,) = foldCaptiveStaking.balances(User01);
         assertEq(rewardDebt, 0);
 
         foldCaptiveStaking.depositRewards{value: 1000 ether}();
 
         assertEq(foldCaptiveStaking.rewardsPerLiquidity(), 1000 ether);
-        assertGt(
-            foldCaptiveStaking.rewardsPerLiquidity(),
-            initialGlobalRewards
-        );
+        assertGt(foldCaptiveStaking.rewardsPerLiquidity(), initialGlobalRewards);
 
         uint256 initialBalance = weth.balanceOf(User01);
         foldCaptiveStaking.collectRewards();
 
-        (, rewardDebt, , ) = foldCaptiveStaking.balances(User01);
+        (, rewardDebt,,) = foldCaptiveStaking.balances(User01);
         assertEq(rewardDebt, foldCaptiveStaking.rewardsPerLiquidity());
         assertGt(weth.balanceOf(User01), initialBalance);
 
-        (uint128 liq, , , ) = foldCaptiveStaking.balances(User01);
+        (uint128 liq,,,) = foldCaptiveStaking.balances(User01);
         foldCaptiveStaking.withdraw(liq / 3);
     }
 
@@ -283,9 +227,7 @@ contract UnitTests is BaseCaptiveTest {
         testAddLiquidity();
 
         // Owner claims insurance
-        uint128 liquidityToClaim = uint128(
-            foldCaptiveStaking.liquidityUnderManagement() / 4
-        );
+        uint128 liquidityToClaim = uint128(foldCaptiveStaking.liquidityUnderManagement() / 4);
 
         address owner = foldCaptiveStaking.owner();
         vm.startPrank(owner);
@@ -304,7 +246,7 @@ contract UnitTests is BaseCaptiveTest {
     function testProRataWithdrawals() public {
         testAddLiquidity();
 
-        (uint128 liq, , , ) = foldCaptiveStaking.balances(User01);
+        (uint128 liq,,,) = foldCaptiveStaking.balances(User01);
 
         // Attempt to withdraw more than allowed amount
         vm.expectRevert(WithdrawProRata.selector);
@@ -312,7 +254,7 @@ contract UnitTests is BaseCaptiveTest {
 
         // Pro-rated withdrawal
         foldCaptiveStaking.withdraw(liq / 2);
-        (uint128 amount, , , ) = foldCaptiveStaking.balances(User01);
+        (uint128 amount,,,) = foldCaptiveStaking.balances(User01);
         assertEq(amount, liq / 2);
     }
 
@@ -320,7 +262,7 @@ contract UnitTests is BaseCaptiveTest {
     function testZeroDeposit() public {
         vm.expectRevert();
         foldCaptiveStaking.deposit(0, 0, 0);
-        (uint128 amount, , , ) = foldCaptiveStaking.balances(User01);
+        (uint128 amount,,,) = foldCaptiveStaking.balances(User01);
         assertEq(amount, 0);
     }
 
@@ -329,9 +271,7 @@ contract UnitTests is BaseCaptiveTest {
         testAddLiquidity();
 
         // Create a reentrancy attack contract and attempt to exploit the staking contract
-        ReentrancyAttack attack = new ReentrancyAttack(
-            payable(address(foldCaptiveStaking))
-        );
+        ReentrancyAttack attack = new ReentrancyAttack(payable(address(foldCaptiveStaking)));
         fold.transfer(address(attack), 1 ether);
         weth.transfer(address(attack), 1 ether);
 
@@ -394,10 +334,10 @@ contract UnitTests is BaseCaptiveTest {
         // User 1 withdraws
         vm.startPrank(User01);
 
-        (uint128 liq, , , ) = foldCaptiveStaking.balances(User01);
+        (uint128 liq,,,) = foldCaptiveStaking.balances(User01);
         foldCaptiveStaking.withdraw(liq / 2);
 
-        (uint128 amount, , , ) = foldCaptiveStaking.balances(User01);
+        (uint128 amount,,,) = foldCaptiveStaking.balances(User01);
         assertEq(amount, liq / 2);
 
         vm.stopPrank();
@@ -405,10 +345,10 @@ contract UnitTests is BaseCaptiveTest {
         // User 2 withdraws
         vm.startPrank(User02);
 
-        (liq, , , ) = foldCaptiveStaking.balances(User02);
+        (liq,,,) = foldCaptiveStaking.balances(User02);
         foldCaptiveStaking.withdraw(liq / 2);
 
-        (amount, , , ) = foldCaptiveStaking.balances(User02);
+        (amount,,,) = foldCaptiveStaking.balances(User02);
         assertEq(amount, liq / 2);
 
         vm.stopPrank();

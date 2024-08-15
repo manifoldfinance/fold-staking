@@ -214,7 +214,10 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     function compound() public isInitialized {
         collectPositionFees();
 
-        (uint256 fee0Owed, uint256 fee1Owed) = owedFees();
+        uint256 fee0Owed = (token0FeesPerLiquidity - balances[msg.sender].token0FeeDebt) * balances[msg.sender].amount
+            / liquidityUnderManagement;
+        uint256 fee1Owed = (token1FeesPerLiquidity - balances[msg.sender].token1FeeDebt) * balances[msg.sender].amount
+            / liquidityUnderManagement;
 
         INonfungiblePositionManager.IncreaseLiquidityParams memory params = INonfungiblePositionManager
             .IncreaseLiquidityParams({
@@ -240,23 +243,14 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         emit Compounded(msg.sender, liquidity, fee0Owed, fee1Owed);
     }
 
-    /// @notice User-specific function to view fees owed on the singular position
-    function owedFees() public view returns (uint256, uint256) {
-        uint256 fee0Owed = ((token0FeesPerLiquidity -
-            balances[msg.sender].token0FeeDebt) * balances[msg.sender].amount) /
-            liquidityUnderManagement;
-        uint256 fee1Owed = ((token1FeesPerLiquidity -
-            balances[msg.sender].token1FeeDebt) * balances[msg.sender].amount) /
-            liquidityUnderManagement;
-
-        return (fee0Owed, fee1Owed);
-    }
-
     /// @notice User-specific function to collect fees on the singular position
     function collectFees() public isInitialized {
         collectPositionFees();
 
-        (uint256 fee0Owed, uint256 fee1Owed) = owedFees();
+        uint256 fee0Owed = (token0FeesPerLiquidity - balances[msg.sender].token0FeeDebt) * balances[msg.sender].amount
+            / liquidityUnderManagement;
+        uint256 fee1Owed = (token1FeesPerLiquidity - balances[msg.sender].token1FeeDebt) * balances[msg.sender].amount
+            / liquidityUnderManagement;
 
         token0.transfer(msg.sender, fee0Owed);
         token1.transfer(msg.sender, fee1Owed);
@@ -267,16 +261,10 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         emit FeesCollected(msg.sender, fee0Owed, fee1Owed);
     }
 
-    /// @notice User-specific function to view rewards owed on the singular position
-    function owedRewards() public view returns (uint256) {
-        return
-            ((rewardsPerLiquidity - balances[msg.sender].rewardDebt) *
-                balances[msg.sender].amount) / liquidityUnderManagement;
-    }
-
     /// @notice User-specific Rewards for Protocol Rewards
     function collectRewards() public isInitialized {
-        uint256 rewardsOwed = owedRewards();
+        uint256 rewardsOwed = (rewardsPerLiquidity - balances[msg.sender].rewardDebt) * balances[msg.sender].amount
+            / liquidityUnderManagement;
 
         WETH9.transfer(msg.sender, rewardsOwed);
 
@@ -385,8 +373,7 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
             amount1Max: uint128(amount1)
         });
 
-        (uint256 amount0Collected, uint256 amount1Collected) = positionManager
-            .collect(collectParams);
+        (uint256 amount0Collected, uint256 amount1Collected) = positionManager.collect(collectParams);
 
         if (amount0Collected != amount0 || amount1Collected != amount1) {
             revert WithdrawFailed();
