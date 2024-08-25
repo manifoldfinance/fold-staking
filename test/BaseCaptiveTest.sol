@@ -11,6 +11,8 @@ contract BaseCaptiveTest is Test {
     error NotInitialized();
     error ZeroLiquidity();
     error WithdrawFailed();
+    error DepositAmountBelowMinimum();
+    error WithdrawalCooldownPeriodNotMet();
     error WithdrawProRata();
     error DepositCapReached();
 

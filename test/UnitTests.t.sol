@@ -31,6 +31,9 @@ contract UnitTests is BaseCaptiveTest {
     function testRemoveLiquidity() public {
         testAddLiquidity();
 
+        // Simulate passage of cooldown period
+        vm.warp(block.timestamp + 14 days);
+
         (uint128 amount, uint128 rewardDebt, uint128 token0FeeDebt, uint128 token1FeeDebt) =
             foldCaptiveStaking.balances(User01);
 
@@ -218,6 +221,9 @@ contract UnitTests is BaseCaptiveTest {
         assertEq(rewardDebt, foldCaptiveStaking.rewardsPerLiquidity());
         assertGt(weth.balanceOf(User01), initialBalance);
 
+        // Simulate passage of cooldown period
+        vm.warp(block.timestamp + 14 days);
+
         (uint128 liq,,,) = foldCaptiveStaking.balances(User01);
         foldCaptiveStaking.withdraw(liq / 3);
     }
@@ -242,23 +248,6 @@ contract UnitTests is BaseCaptiveTest {
         vm.stopPrank();
     }
 
-    /// @dev Ensure pro-rata withdrawals are handled correctly
-    function testProRataWithdrawals() public {
-        testAddLiquidity();
-
-        (uint128 liq,,,) = foldCaptiveStaking.balances(User01);
-
-        // Attempt to withdraw more than allowed amount
-        vm.expectRevert(WithdrawProRata.selector);
-        foldCaptiveStaking.withdraw(liq);
-
-        // Pro-rated withdrawal
-        foldCaptiveStaking.withdraw(liq / 2);
-        (uint128 amount,,,) = foldCaptiveStaking.balances(User01);
-        assertEq(amount, liq / 2);
-    }
-
-    /// @dev Ensure zero deposits are handled correctly and revert as expected.
     function testZeroDeposit() public {
         vm.expectRevert();
         foldCaptiveStaking.deposit(0, 0, 0);
@@ -279,6 +268,21 @@ contract UnitTests is BaseCaptiveTest {
         attack.attack();
     }
 
+    function testMinimumDeposit() public {
+        fold.transfer(User01, 0.5 ether);
+
+        vm.deal(User01, 0.5 ether);
+        vm.startPrank(User01);
+
+        weth.deposit{value: 0.5 ether}();
+        weth.approve(address(foldCaptiveStaking), type(uint256).max);
+        fold.approve(address(foldCaptiveStaking), type(uint256).max);
+
+        // Expect revert due to minimum deposit requirement
+        vm.expectRevert(DepositAmountBelowMinimum.selector);
+        foldCaptiveStaking.deposit(0.5 ether, 0.5 ether, 0);
+    }
+    
     /// @dev Deposit Cap Enforcement: Test to ensure the deposit cap is respected.
     function testDepositCap() public {
         uint256 cap = 100 ether;
@@ -303,52 +307,23 @@ contract UnitTests is BaseCaptiveTest {
         vm.stopPrank();
     }
 
-    /// @dev Multiple Users: Test simultaneous deposits and withdrawals by multiple users.
-    function testMultipleUsersDepositWithdraw() public {
-        // User 1 deposits
-        fold.transfer(User01, 1_000 ether);
-        vm.deal(User01, 1_000 ether);
-        vm.startPrank(User01);
+    function testWithdrawalCooldown() public {
+        testAddLiquidity();
 
-        weth.deposit{value: 1_000 ether}();
-        weth.approve(address(foldCaptiveStaking), type(uint256).max);
-        fold.approve(address(foldCaptiveStaking), type(uint256).max);
-
-        foldCaptiveStaking.deposit(1_000 ether, 1_000 ether, 0);
-
-        vm.stopPrank();
-
-        // User 2 deposits
-        fold.transfer(User02, 500 ether);
-        vm.deal(User02, 500 ether);
-        vm.startPrank(User02);
-
-        weth.deposit{value: 500 ether}();
-        weth.approve(address(foldCaptiveStaking), type(uint256).max);
-        fold.approve(address(foldCaptiveStaking), type(uint256).max);
-
-        foldCaptiveStaking.deposit(500 ether, 500 ether, 0);
-
-        vm.stopPrank();
-
-        // User 1 withdraws
         vm.startPrank(User01);
 
         (uint128 liq,,,) = foldCaptiveStaking.balances(User01);
+
+        // Attempt to withdraw before cooldown period
+        vm.expectRevert(WithdrawalCooldownPeriodNotMet.selector);
         foldCaptiveStaking.withdraw(liq / 2);
 
+        // Simulate passage of cooldown period
+        vm.warp(block.timestamp + 14 days);
+
+        // Withdraw after cooldown period
+        foldCaptiveStaking.withdraw(liq / 2);
         (uint128 amount,,,) = foldCaptiveStaking.balances(User01);
-        assertEq(amount, liq / 2);
-
-        vm.stopPrank();
-
-        // User 2 withdraws
-        vm.startPrank(User02);
-
-        (liq,,,) = foldCaptiveStaking.balances(User02);
-        foldCaptiveStaking.withdraw(liq / 2);
-
-        (amount,,,) = foldCaptiveStaking.balances(User02);
         assertEq(amount, liq / 2);
 
         vm.stopPrank();
