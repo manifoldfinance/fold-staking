@@ -274,6 +274,23 @@ contract UnitTests is BaseCaptiveTest {
         // Expect revert due to minimum deposit requirement
         vm.expectRevert(DepositAmountBelowMinimum.selector);
         foldCaptiveStaking.deposit(0.5 ether, 0.5 ether, 0);
+    }
+    
+    /// @dev Deposit Cap Enforcement: Test to ensure the deposit cap is respected.
+    function testDepositCap() public {
+        uint256 cap = 100 ether;
+        foldCaptiveStaking.setDepositCap(cap);
+
+        vm.deal(User01, 0.5 ether);
+        vm.startPrank(User01);
+
+        weth.deposit{value: 0.5 ether}();
+        weth.approve(address(foldCaptiveStaking), type(uint256).max);
+        fold.approve(address(foldCaptiveStaking), type(uint256).max);
+
+        // Expect revert due to minimum deposit requirement
+        vm.expectRevert(DepositAmountBelowMinimum.selector);
+        foldCaptiveStaking.deposit(0.5 ether, 0.5 ether, 0);
 
         vm.stopPrank();
     }
