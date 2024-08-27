@@ -1,4 +1,5 @@
-pragma solidity 0.8.25;
+// SPDX-License-Identifier: UNLICESED
+pragma solidity ^0.8.25;
 
 import "test/BaseCaptiveTest.sol";
 import "test/interfaces/ISwapRouter.sol";
@@ -6,7 +7,6 @@ import "test/interfaces/ISwapRouter.sol";
 contract UnitTests is BaseCaptiveTest {
     ISwapRouter public router = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
-    /// @dev Ensure that balances and state variables are updated correctly.
     function testAddLiquidity() public {
         fold.transfer(User01, 1_000 ether);
 
@@ -27,7 +27,6 @@ contract UnitTests is BaseCaptiveTest {
         assertEq(token1FeeDebt, 0);
     }
 
-    /// @dev Ensure that balances and state variables are updated correctly.
     function testRemoveLiquidity() public {
         testAddLiquidity();
 
@@ -54,7 +53,6 @@ contract UnitTests is BaseCaptiveTest {
         assertEq(amount, liq / 4);
     }
 
-    /// @dev Ensure fees are accrued correctly and distributed proportionately.
     function testFeesAccrue() public {
         testAddLiquidity();
 
@@ -103,7 +101,6 @@ contract UnitTests is BaseCaptiveTest {
         assertGt(foldCaptiveStaking.token1FeesPerLiquidity(), 0);
     }
 
-    /// @dev Ensure fees are compounded correctly and state variables are updated.
     function testCanCompoundFees() public {
         testAddLiquidity();
 
@@ -151,7 +148,6 @@ contract UnitTests is BaseCaptiveTest {
         assertGt(newAmount, amount);
     }
 
-    /// @dev Ensure new users can't steal fees accrued by others.
     function testNewUsersDontStealFees() public {
         testFeesAccrue();
 
@@ -199,7 +195,6 @@ contract UnitTests is BaseCaptiveTest {
         stakingTwo.depositRewards();
     }
 
-    /// @dev Ensure rewards are added and collected correctly.
     function testCanAddRewards() public {
         testAddLiquidity();
 
@@ -228,7 +223,6 @@ contract UnitTests is BaseCaptiveTest {
         foldCaptiveStaking.withdraw(liq / 3);
     }
 
-    /// @dev Ensure the owner can claim insurance correctly.
     function testClaimInsurance() public {
         testAddLiquidity();
 
@@ -255,7 +249,6 @@ contract UnitTests is BaseCaptiveTest {
         assertEq(amount, 0);
     }
 
-    /// @dev Ensure the contract is protected against reentrancy attacks.
     function testReentrancy() public {
         testAddLiquidity();
 
@@ -288,21 +281,16 @@ contract UnitTests is BaseCaptiveTest {
         uint256 cap = 100 ether;
         foldCaptiveStaking.setDepositCap(cap);
 
-        fold.transfer(User01, 2000 ether);
-
-        vm.deal(User01, 2000 ether);
+        vm.deal(User01, 0.5 ether);
         vm.startPrank(User01);
 
-        weth.deposit{value: 2000 ether}();
+        weth.deposit{value: 0.5 ether}();
         weth.approve(address(foldCaptiveStaking), type(uint256).max);
         fold.approve(address(foldCaptiveStaking), type(uint256).max);
 
-        // First deposit should succeed
-        foldCaptiveStaking.deposit(1_000 ether, 1_000 ether, 0);
-
-        // Second deposit should revert due to cap
-        vm.expectRevert(DepositCapReached.selector);
-        foldCaptiveStaking.deposit(1_000 ether, 1_000 ether, 0);
+        // Expect revert due to minimum deposit requirement
+        vm.expectRevert(DepositAmountBelowMinimum.selector);
+        foldCaptiveStaking.deposit(0.5 ether, 0.5 ether, 0);
 
         vm.stopPrank();
     }

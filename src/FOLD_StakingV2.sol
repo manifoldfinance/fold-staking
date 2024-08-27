@@ -1,5 +1,14 @@
 /// SPDX-License-Identifier: SSPL-1.0
-pragma solidity ^0.8.26;
+pragma solidity 0.8.26;
+
+// Authorization and Authentication
+
+import {Owned} from "lib/solmate/src/auth/Owned.sol";
+
+/// contracts
+import {WETH} from "lib/solady/src/tokens/WETH.sol";
+import {ERC20} from "lib/solady/src/tokens/ERC20.sol";
+
 
 /// Interfaces
 import {INonfungiblePositionManager} from "./interfaces/INonfungiblePositionManager.sol";
@@ -9,20 +18,15 @@ import {IUniswapV3Pool} from "./interfaces/IUniswapV3Pool.sol";
 
 /// Libraries
 import {TickMath} from "./libraries/TickMath.sol";
-import {SafeTransferLib} from "lib/solmate/src/utils/SafeTransferLib.sol";
 
-/// contracts
-import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
-import {Owned} from "lib/solmate/src/auth/Owned.sol";
-import {WETH} from "lib/solmate/src/tokens/WETH.sol";
+
+
+
 
 /// @author CopyPaste
-/// @title FoldCaptiveStaking
+/// @title FoldCaptiveStakingV2
 /// @notice Staking contract for managing FOLD token liquidity on Uniswap V3
-contract FoldCaptiveStaking is Owned(msg.sender) {
-    using SafeTransferLib for ERC20;
-    using SafeTransferLib for WETH;
-
+contract FoldCaptiveStakingV2 is Owned(msg.sender) {
     /*//////////////////////////////////////////////////////////////
                              INITIALIZATION
     //////////////////////////////////////////////////////////////*/
@@ -91,8 +95,8 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
             deadline: block.timestamp + 1 minutes
         });
 
-        token0.safeApprove(address(positionManager), type(uint256).max);
-        token1.safeApprove(address(positionManager), type(uint256).max);
+        token0.approve(address(positionManager), type(uint256).max);
+        token1.approve(address(positionManager), type(uint256).max);
 
         uint128 liquidity;
         (TOKEN_ID, liquidity,,) = positionManager.mint(params);
@@ -202,16 +206,16 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
             deadline: block.timestamp + 1 minutes
         });
 
-        token0.safeTransferFrom(msg.sender, address(this), amount0);
-        token1.safeTransferFrom(msg.sender, address(this), amount1);
+        token0.transferFrom(msg.sender, address(this), amount0);
+        token1.transferFrom(msg.sender, address(this), amount1);
 
         (uint128 liquidity, uint256 actualAmount0, uint256 actualAmount1) = positionManager.increaseLiquidity(params);
 
         if (actualAmount0 < amount0) {
-            token0.safeTransfer(msg.sender, amount0 - actualAmount0);
+            token0.transfer(msg.sender, amount0 - actualAmount0);
         }
         if (actualAmount1 < amount1) {
-            token1.safeTransfer(msg.sender, amount1 - actualAmount1);
+            token1.transfer(msg.sender, amount1 - actualAmount1);
         }
 
         balances[msg.sender].amount += liquidity;
@@ -247,8 +251,8 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
 
         (uint128 liquidity, uint256 actualAmount0, uint256 actualAmount1) = positionManager.increaseLiquidity(params);
 
-        token0.safeTransfer(msg.sender, fee0Owed - actualAmount0);
-        token1.safeTransfer(msg.sender, fee1Owed - actualAmount1);
+        token0.transfer(msg.sender, fee0Owed - actualAmount0);
+        token1.transfer(msg.sender, fee1Owed - actualAmount1);
 
         balances[msg.sender].token0FeeDebt = uint128(token0FeesPerLiquidity);
         balances[msg.sender].token1FeeDebt = uint128(token1FeesPerLiquidity);
@@ -268,8 +272,8 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         uint256 fee1Owed = (token1FeesPerLiquidity - balances[msg.sender].token1FeeDebt) * balances[msg.sender].amount
             / liquidityUnderManagement;
 
-        token0.safeTransfer(msg.sender, fee0Owed);
-        token1.safeTransfer(msg.sender, fee1Owed);
+        token0.transfer(msg.sender, fee0Owed);
+        token1.transfer(msg.sender, fee1Owed);
 
         balances[msg.sender].token0FeeDebt = uint128(token0FeesPerLiquidity);
         balances[msg.sender].token1FeeDebt = uint128(token1FeesPerLiquidity);
@@ -282,7 +286,7 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         uint256 rewardsOwed = (rewardsPerLiquidity - balances[msg.sender].rewardDebt) * balances[msg.sender].amount
             / liquidityUnderManagement;
 
-        WETH9.safeTransfer(msg.sender, rewardsOwed);
+        WETH9.transfer(msg.sender, rewardsOwed);
 
         balances[msg.sender].rewardDebt = uint128(rewardsPerLiquidity);
 
@@ -324,8 +328,8 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
             revert WithdrawFailed();
         }
 
-        token0.safeTransfer(msg.sender, amount0);
-        token1.safeTransfer(msg.sender, amount1);
+        token0.transfer(msg.sender, amount0);
+        token1.transfer(msg.sender, amount1);
 
         emit Withdraw(msg.sender, liquidity);
     }
@@ -389,8 +393,8 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
             revert WithdrawFailed();
         }
 
-        token0.safeTransfer(owner, amount0);
-        token1.safeTransfer(owner, amount1);
+        token0.transfer(owner, amount0);
+        token1.transfer(owner, amount1);
 
         emit InsuranceClaimed(owner, amount0, amount1);
     }
