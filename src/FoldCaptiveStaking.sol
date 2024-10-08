@@ -43,6 +43,7 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     error AlreadyInitialized();
     error NotInitialized();
     error ZeroLiquidity();
+    error NotEnoughLiquidity();
     error WithdrawFailed();
     error DepositCapReached();
     error DepositAmountBelowMinimum();
@@ -60,13 +61,11 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
         positionManager = INonfungiblePositionManager(_positionManager);
         POOL = IUniswapV3Pool(_pool);
 
-        token0 = ERC20(POOL.token0());
-        token1 = ERC20(POOL.token1());
+        token0 = ERC20(IUniswapV3Pool(_pool).token0());
+        token1 = ERC20(IUniswapV3Pool(_pool).token1());
 
         WETH9 = WETH(payable(_weth));
         FOLD = ERC20(_fold);
-
-        initialized = false;
     }
 
     /// @notice Initialize the contract by minting a small initial liquidity position
@@ -293,6 +292,7 @@ contract FoldCaptiveStaking is Owned(msg.sender) {
     /// @param liquidity The amount of liquidity to withdraw
     function withdraw(uint128 liquidity) external isInitialized {
         if (block.timestamp < depositTimeStamp[msg.sender] + COOLDOWN_PERIOD) revert WithdrawalCooldownPeriodNotMet();
+        if (liquidity > liquidityUnderManagement) revert NotEnoughLiquidity();
 
         collectFees();
         collectRewards();
