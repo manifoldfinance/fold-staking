@@ -6,6 +6,19 @@ import "test/interfaces/ISwapRouter.sol";
 contract UnitTests is BaseCaptiveTest {
     ISwapRouter public router = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
+    /// @dev Test the constructor that you cannot supply a zero address
+    function testNoZeroAddressInitialization() public {
+        vm.expectRevert(FoldCaptiveStaking.ZeroAddress.selector);
+        new FoldCaptiveStaking(address(0), address(0), address(0), address(0));
+    }
+
+    /// @dev Test that you cannot initialize the same contract twice 
+    function testNoDoubleInitialization() public {
+        vm.startPrank(foldCaptiveStaking.owner());
+        vm.expectRevert(FoldCaptiveStaking.AlreadyInitialized.selector);
+        foldCaptiveStaking.initialize();
+    }
+
     /// @dev Ensure that balances and state variables are updated correctly.
     function testAddLiquidity() public {
         fold.transfer(User01, 1_000 ether);
